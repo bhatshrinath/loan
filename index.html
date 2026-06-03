@@ -49,6 +49,15 @@
         }
         .result-value { font-size: 2rem; font-weight: bold; color: var(--primary); }
         .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        
+        /* Table Styles */
+        .table-container { overflow-x: auto; margin-top: 1rem; max-height: 500px; overflow-y: auto;}
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+        th { background-color: var(--bg-color); padding: 1rem; font-weight: 600; position: sticky; top: 0; }
+        td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
+        tr:hover { background-color: #f1f5f9; }
+        .phase-pre { color: #f59e0b; font-weight: 600; }
+        .phase-emi { color: #10b981; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -87,7 +96,7 @@
                 <input type="number" id="gracePeriod" value="12" step="1">
             </div>
             <div class="form-group">
-                <label>Monthly Pre-EMI Payment Paid</label>
+                <label>Monthly Pre-EMI Payment</label>
                 <input type="number" id="preEmiPayment" value="15000" step="1000">
             </div>
         </div>
@@ -128,7 +137,7 @@
         <div class="result-box">
             <label>Revised Principal (After Pre-EMI Phase)</label>
             <div class="result-value" id="outRevisedPrincipal">0</div>
-            <small>Capitalized interest added during wait time.</small>
+            <small>Total starting balance for the EMI phase.</small>
         </div>
 
         <div class="result-box" style="border-left-color: #10b981;">
@@ -142,9 +151,31 @@
             <div class="result-value" style="color: #f43f5e;" id="outTotalInterest">0</div>
         </div>
     </div>
+
+    <div class="panel" style="grid-column: 1 / -1;">
+        <h2>Monthly Cashflow Schedule</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Phase</th>
+                        <th>Payment</th>
+                        <th>Interest Paid</th>
+                        <th>Principal Paid</th>
+                        <th>Remaining Balance</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <script>
+    const formatCurrency = (num) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
+
     function calculate() {
         // 1. Fetch Inputs
         const secAmt = parseFloat(document.getElementById('secAmount').value) || 0;
@@ -160,47 +191,100 @@
 
         // 2. Base Calculations
         const totalBaseLoan = secAmt + unsecAmt;
-        if (totalBaseLoan === 0) return;
+        if (totalBaseLoan === 0) {
+            clearOutputs();
+            return;
+        }
 
         // Weighted Average Interest Rate (Blended Rate)
         const blendedAnnualRate = ((secAmt * secRate) + (unsecAmt * unsecRate)) / totalBaseLoan;
         
         // 3. Grace Period (Pre-EMI) Calculation
         let currentPrincipal = totalBaseLoan;
-        let accruedUnpaidInterest = 0; // Used for Simple Interest tracking
+        let accruedUnpaidInterest = 0; 
         let effectiveMonthlyRate = 0;
+        let totalPreEmiInterestGenerated = 0;
+        let scheduleRows = [];
 
-        // Determine effective monthly rate based on compounding frequency
+        // Determine effective monthly rate
         if (compFreq === 'monthly') {
             effectiveMonthlyRate = blendedAnnualRate / 12 / 100;
         } else if (compFreq === 'daily') {
-            // Daily compounding converted to an effective monthly period
             effectiveMonthlyRate = Math.pow(1 + (blendedAnnualRate / 365 / 100), 365 / 12) - 1;
         } else if (compFreq === 'yearly') {
-            // Yearly compounding converted to an effective monthly period
             effectiveMonthlyRate = Math.pow(1 + (blendedAnnualRate / 100), 1 / 12) - 1;
         }
 
-        let totalPreEmiInterestGenerated = 0;
-
-        for (let m = 0; m < graceMonths; m++) {
+        for (let m = 1; m <= graceMonths; m++) {
             let interestForMonth = 0;
+            let principalPaidThisMonth = 0;
+            let interestCoveredThisMonth = 0;
             
             if (intType === 'compound') {
                 interestForMonth = currentPrincipal * effectiveMonthlyRate;
                 totalPreEmiInterestGenerated += interestForMonth;
-                // Add unpaid interest to principal (capitalization)
+                
+                // For tracking in the table
+                interestCoveredThisMonth = Math.min(interestForMonth, preEmiPaid);
+                let surplus = preEmiPaid - interestCoveredThisMonth;
+                principalPaidThisMonth = surplus;
+                
                 currentPrincipal += (interestForMonth - preEmiPaid);
             } else {
-                // Simple interest is always calculated on the base loan amount only
-                interestForMonth = totalBaseLoan * (blendedAnnualRate / 12 / 100);
+                // FIXED SIMPLE INTEREST LOGIC
+                interestForMonth = currentPrincipal * (blendedAnnualRate / 12 / 100);
                 totalPreEmiInterestGenerated += interestForMonth;
-                accruedUnpaidInterest += (interestForMonth - preEmiPaid);
+
+                let unpaidForMonth = interestForMonth - preEmiPaid;
+                
+                if (unpaidForMonth >= 0) {
+                    accruedUnpaidInterest += unpaidForMonth;
+                    interestCoveredThisMonth = preEmiPaid;
+                    principalPaidThisMonth = 0;
+                } else {
+                    // Paid more than interest generated this month
+                    interestCoveredThisMonth = interestForMonth;
+                    let excessPayment = Math.abs(unpaidForMonth);
+                    
+                    // Waterfall: Pay down accrued interest first, then principal
+                    if (accruedUnpaidInterest > 0) {
+                        if (excessPayment >= accruedUnpaidInterest) {
+                            excessPayment -= accruedUnpaidInterest;
+                            interestCoveredThisMonth += accruedUnpaidInterest; // From past accruals
+                            accruedUnpaidInterest = 0;
+                            
+                            // Remaining excess reduces principal
+                            principalPaidThisMonth = excessPayment;
+                            currentPrincipal -= excessPayment;
+                        } else {
+                            accruedUnpaidInterest -= excessPayment;
+                            interestCoveredThisMonth += excessPayment;
+                        }
+                    } else {
+                        // Direct principal reduction
+                        principalPaidThisMonth = excessPayment;
+                        currentPrincipal -= excessPayment;
+                    }
+                }
             }
+
+            // Total outstanding at this exact month mark (for the table)
+            let runningBalance = intType === 'compound' ? currentPrincipal : (currentPrincipal + accruedUnpaidInterest);
+
+            scheduleRows.push(`
+                <tr>
+                    <td>${m}</td>
+                    <td class="phase-pre">Pre-EMI</td>
+                    <td>${formatCurrency(preEmiPaid)}</td>
+                    <td>${formatCurrency(interestCoveredThisMonth)}</td>
+                    <td>${formatCurrency(principalPaidThisMonth)}</td>
+                    <td>${formatCurrency(runningBalance)}</td>
+                </tr>
+            `);
         }
 
-        // Final Revised Principal before EMI starts
-        let revisedPrincipal = intType === 'compound' ? currentPrincipal : (totalBaseLoan + accruedUnpaidInterest);
+        // Final Revised Principal before regular EMI starts
+        let revisedPrincipal = intType === 'compound' ? currentPrincipal : (currentPrincipal + accruedUnpaidInterest);
 
         // 4. EMI Calculation Phase
         const nMonths = tenureYears * 12;
@@ -210,19 +294,48 @@
 
         if (nMonths > 0 && standardMonthlyRate > 0) {
             emi = revisedPrincipal * standardMonthlyRate * Math.pow(1 + standardMonthlyRate, nMonths) / (Math.pow(1 + standardMonthlyRate, nMonths) - 1);
-            totalRepaymentInterest = (emi * nMonths) - revisedPrincipal;
+            
+            let emiBalance = revisedPrincipal;
+            for(let m = 1; m <= nMonths; m++) {
+                let intPortion = emiBalance * standardMonthlyRate;
+                let prinPortion = emi - intPortion;
+                emiBalance -= prinPortion;
+                if(emiBalance < 0.01) emiBalance = 0; // handle rounding
+                
+                totalRepaymentInterest += intPortion;
+
+                scheduleRows.push(`
+                    <tr>
+                        <td>${graceMonths + m}</td>
+                        <td class="phase-emi">Repayment</td>
+                        <td>${formatCurrency(emi)}</td>
+                        <td>${formatCurrency(intPortion)}</td>
+                        <td>${formatCurrency(prinPortion)}</td>
+                        <td>${formatCurrency(emiBalance)}</td>
+                    </tr>
+                `);
+            }
         }
 
         const grandTotalInterest = totalPreEmiInterestGenerated + totalRepaymentInterest;
 
         // 5. Update UI
-        const formatCurrency = (num) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
-
         document.getElementById('outBaseLoan').innerText = formatCurrency(totalBaseLoan);
         document.getElementById('outBlendedRate').innerText = `Blended Annual Rate: ${blendedAnnualRate.toFixed(2)}%`;
         document.getElementById('outRevisedPrincipal').innerText = formatCurrency(revisedPrincipal);
         document.getElementById('outEmi').innerText = formatCurrency(emi);
         document.getElementById('outTotalInterest').innerText = formatCurrency(grandTotalInterest);
+        
+        document.getElementById('scheduleBody').innerHTML = scheduleRows.join('');
+    }
+
+    function clearOutputs() {
+        document.getElementById('outBaseLoan').innerText = '0';
+        document.getElementById('outBlendedRate').innerText = 'Blended Rate: 0%';
+        document.getElementById('outRevisedPrincipal').innerText = '0';
+        document.getElementById('outEmi').innerText = '0';
+        document.getElementById('outTotalInterest').innerText = '0';
+        document.getElementById('scheduleBody').innerHTML = '';
     }
 
     // Attach listeners to all inputs to auto-calculate on change

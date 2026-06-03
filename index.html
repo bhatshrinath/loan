@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Loan Amortization Simulator</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --border: #e2e8f0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+        .panel {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        h2 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.9rem; }
+        input, select {
+            width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px;
+            font-size: 1rem; box-sizing: border-box;
+        }
+        .result-box {
+            background: var(--bg-color); padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;
+            border-left: 4px solid var(--primary);
+        }
+        .result-value { font-size: 2rem; font-weight: bold; color: var(--primary); }
+        .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="panel">
+        <h2>Loan Parameters</h2>
+        
+        <div class="split-grid">
+            <div class="form-group">
+                <label>Secured Loan Amount</label>
+                <input type="number" id="secAmount" value="15000000" step="100000">
+            </div>
+            <div class="form-group">
+                <label>Secured Int. Rate (%)</label>
+                <input type="number" id="secRate" value="10.0" step="0.1">
+            </div>
+        </div>
+
+        <div class="split-grid">
+            <div class="form-group">
+                <label>Unsecured Loan Amount</label>
+                <input type="number" id="unsecAmount" value="0" step="100000">
+            </div>
+            <div class="form-group">
+                <label>Unsecured Int. Rate (%)</label>
+                <input type="number" id="unsecRate" value="12.0" step="0.1">
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">
+
+        <div class="split-grid">
+            <div class="form-group">
+                <label>Wait Time / Pre-EMI (Months)</label>
+                <input type="number" id="gracePeriod" value="12" step="1">
+            </div>
+            <div class="form-group">
+                <label>Monthly Pre-EMI Payment Paid</label>
+                <input type="number" id="preEmiPayment" value="15000" step="1000">
+            </div>
+        </div>
+
+        <div class="split-grid">
+            <div class="form-group">
+                <label>Pre-EMI Interest Type</label>
+                <select id="interestType">
+                    <option value="compound">Compounding</option>
+                    <option value="simple">Simple</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Compounding Frequency</label>
+                <select id="compoundFreq">
+                    <option value="monthly">Monthly</option>
+                    <option value="daily">Daily</option>
+                    <option value="yearly">Yearly</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Final Repayment Tenure (Years)</label>
+            <input type="number" id="tenureYears" value="15" step="1">
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>Financial Analysis</h2>
+        
+        <div class="result-box">
+            <label>Blended Base Loan Amount</label>
+            <div class="result-value" id="outBaseLoan">0</div>
+            <small id="outBlendedRate">Blended Rate: 0%</small>
+        </div>
+
+        <div class="result-box">
+            <label>Revised Principal (After Pre-EMI Phase)</label>
+            <div class="result-value" id="outRevisedPrincipal">0</div>
+            <small>Capitalized interest added during wait time.</small>
+        </div>
+
+        <div class="result-box" style="border-left-color: #10b981;">
+            <label>Final Regular EMI</label>
+            <div class="result-value" style="color: #10b981;" id="outEmi">0</div>
+            <small>Monthly payment for the main tenure.</small>
+        </div>
+
+        <div class="result-box" style="border-left-color: #f43f5e;">
+            <label>Total Interest Payable (Over Life of Loan)</label>
+            <div class="result-value" style="color: #f43f5e;" id="outTotalInterest">0</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        // 1. Fetch Inputs
+        const secAmt = parseFloat(document.getElementById('secAmount').value) || 0;
+        const secRate = parseFloat(document.getElementById('secRate').value) || 0;
+        const unsecAmt = parseFloat(document.getElementById('unsecAmount').value) || 0;
+        const unsecRate = parseFloat(document.getElementById('unsecRate').value) || 0;
+        
+        const graceMonths = parseInt(document.getElementById('gracePeriod').value) || 0;
+        const preEmiPaid = parseFloat(document.getElementById('preEmiPayment').value) || 0;
+        const intType = document.getElementById('interestType').value;
+        const compFreq = document.getElementById('compoundFreq').value;
+        const tenureYears = parseFloat(document.getElementById('tenureYears').value) || 0;
+
+        // 2. Base Calculations
+        const totalBaseLoan = secAmt + unsecAmt;
+        if (totalBaseLoan === 0) return;
+
+        // Weighted Average Interest Rate (Blended Rate)
+        const blendedAnnualRate = ((secAmt * secRate) + (unsecAmt * unsecRate)) / totalBaseLoan;
+        
+        // 3. Grace Period (Pre-EMI) Calculation
+        let currentPrincipal = totalBaseLoan;
+        let accruedUnpaidInterest = 0; // Used for Simple Interest tracking
+        let effectiveMonthlyRate = 0;
+
+        // Determine effective monthly rate based on compounding frequency
+        if (compFreq === 'monthly') {
+            effectiveMonthlyRate = blendedAnnualRate / 12 / 100;
+        } else if (compFreq === 'daily') {
+            // Daily compounding converted to an effective monthly period
+            effectiveMonthlyRate = Math.pow(1 + (blendedAnnualRate / 365 / 100), 365 / 12) - 1;
+        } else if (compFreq === 'yearly') {
+            // Yearly compounding converted to an effective monthly period
+            effectiveMonthlyRate = Math.pow(1 + (blendedAnnualRate / 100), 1 / 12) - 1;
+        }
+
+        let totalPreEmiInterestGenerated = 0;
+
+        for (let m = 0; m < graceMonths; m++) {
+            let interestForMonth = 0;
+            
+            if (intType === 'compound') {
+                interestForMonth = currentPrincipal * effectiveMonthlyRate;
+                totalPreEmiInterestGenerated += interestForMonth;
+                // Add unpaid interest to principal (capitalization)
+                currentPrincipal += (interestForMonth - preEmiPaid);
+            } else {
+                // Simple interest is always calculated on the base loan amount only
+                interestForMonth = totalBaseLoan * (blendedAnnualRate / 12 / 100);
+                totalPreEmiInterestGenerated += interestForMonth;
+                accruedUnpaidInterest += (interestForMonth - preEmiPaid);
+            }
+        }
+
+        // Final Revised Principal before EMI starts
+        let revisedPrincipal = intType === 'compound' ? currentPrincipal : (totalBaseLoan + accruedUnpaidInterest);
+
+        // 4. EMI Calculation Phase
+        const nMonths = tenureYears * 12;
+        const standardMonthlyRate = blendedAnnualRate / 12 / 100;
+        let emi = 0;
+        let totalRepaymentInterest = 0;
+
+        if (nMonths > 0 && standardMonthlyRate > 0) {
+            emi = revisedPrincipal * standardMonthlyRate * Math.pow(1 + standardMonthlyRate, nMonths) / (Math.pow(1 + standardMonthlyRate, nMonths) - 1);
+            totalRepaymentInterest = (emi * nMonths) - revisedPrincipal;
+        }
+
+        const grandTotalInterest = totalPreEmiInterestGenerated + totalRepaymentInterest;
+
+        // 5. Update UI
+        const formatCurrency = (num) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
+
+        document.getElementById('outBaseLoan').innerText = formatCurrency(totalBaseLoan);
+        document.getElementById('outBlendedRate').innerText = `Blended Annual Rate: ${blendedAnnualRate.toFixed(2)}%`;
+        document.getElementById('outRevisedPrincipal').innerText = formatCurrency(revisedPrincipal);
+        document.getElementById('outEmi').innerText = formatCurrency(emi);
+        document.getElementById('outTotalInterest').innerText = formatCurrency(grandTotalInterest);
+    }
+
+    // Attach listeners to all inputs to auto-calculate on change
+    document.querySelectorAll('input, select').forEach(element => {
+        element.addEventListener('input', calculate);
+    });
+
+    // Initial calculation on load
+    calculate();
+</script>
+</body>
+</html>

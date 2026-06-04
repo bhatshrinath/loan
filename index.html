@@ -73,11 +73,11 @@
     <div>
         <div class="panel" style="border: 2px solid #3b82f6;">
             <h2 style="color: #1d4ed8; border-bottom: none; margin-bottom: 0;">Scenario A: Keep FD (Pledged)</h2>
-            <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.2rem;">Define exactly what the bank offers when they hold your FD.</p>
+            <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.2rem;">Define exactly what the bank offers when they hold your FD. (Note: Pledged FD continues to earn interest).</p>
             <div class="split-grid">
                 <div class="form-group">
                     <label>Secured Amount (₹)</label>
-                    <input type="number" id="secAmountA" value="5000000" step="100000">
+                    <input type="number" id="secAmountA" value="13500000" step="100000">
                 </div>
                 <div class="form-group">
                     <label>Secured Rate (%)</label>
@@ -87,7 +87,7 @@
             <div class="split-grid">
                 <div class="form-group">
                     <label>Unsecured Amount (₹)</label>
-                    <input type="number" id="unsecAmountA" value="12000000" step="100000">
+                    <input type="number" id="unsecAmountA" value="3500000" step="100000">
                 </div>
                 <div class="form-group">
                     <label>Unsecured Rate (%)</label>
@@ -98,7 +98,14 @@
 
         <div class="panel" style="border: 2px solid #8b5cf6;">
             <h2 style="color: #6d28d9; border-bottom: none; margin-bottom: 0;">Scenario B: Liquidate FD</h2>
-            <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.2rem;">Define exactly what the bank offers when you DO NOT pledge the FD.</p>
+            <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.2rem;">Define exactly what the bank offers when you liquidate FD for cash instead.</p>
+            
+            <div class="form-group" style="background: #f5f3ff; padding: 1rem; border-radius: 8px; border: 1px solid #ddd6fe;">
+                <label style="color: #6d28d9;">FD Liquidated for Cash (₹)</label>
+                <input type="number" id="fdLiquidatedB" value="5000000" step="100000" style="border-color: #ddd6fe;">
+                <small style="color: #64748b; display: block; margin-top: 0.3rem;">This specific amount is destroyed and stops earning interest.</small>
+            </div>
+
             <div class="split-grid">
                 <div class="form-group">
                     <label>Secured Amount (₹)</label>
@@ -158,19 +165,20 @@
 
         <div class="panel">
             <h2>Market Reality Factors</h2>
+            <div class="form-group">
+                <label>Total FD Portfolio Available (₹)</label>
+                <input type="number" id="totalFd" value="7500000" step="100000">
+                <small style="color: #64748b;">Your total combined FD savings across all accounts.</small>
+            </div>
             <div class="split-grid">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label>FD Amount in Question (₹)</label>
-                    <input type="number" id="fdAmount" value="5000000" step="100000">
-                </div>
                 <div class="form-group" style="margin-bottom: 0;">
                     <label>FD Interest Rate (%)</label>
                     <input type="number" id="fdRate" value="6.5" step="0.1">
                 </div>
-            </div>
-            <div class="form-group" style="margin-top: 1.2rem; margin-bottom: 0;">
-                <label>Expected Inflation Rate (%)</label>
-                <input type="number" id="inflationRate" value="8.0" step="0.1">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Expected Inflation Rate (%)</label>
+                    <input type="number" id="inflationRate" value="8.0" step="0.1">
+                </div>
             </div>
         </div>
     </div>
@@ -186,8 +194,11 @@
                 <div>Revised Principal:</div> <strong id="outRevisedPrincipalA">0</strong>
                 <div>Final Regular EMI:</div> <strong id="outEmiA" style="color:#10b981;">0</strong>
                 <div>Total Out-of-Pocket:</div> <strong id="outPocketA">0</strong>
-                <div style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem;">FD Maturity Gains:</div> 
-                <strong id="outFdGainsA" style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem; color:#10b981;">+0</strong>
+                
+                <div style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem; grid-column: span 2;">
+                    <span style="font-size: 0.9rem;">Interest Earned (On entire ₹<span id="labelFdA">0</span> portfolio):</span><br>
+                    <strong id="outFdGainsA" style="color:#10b981;">+0</strong>
+                </div>
             </div>
             <div style="background: #eff6ff; padding: 0.8rem; border-radius: 6px; margin-top: 1rem;">
                 Net Wealth Lost (Nominal): <strong id="outNetWealthA" style="color:#f43f5e;">0</strong><br>
@@ -203,8 +214,14 @@
                 <div>Revised Principal:</div> <strong id="outRevisedPrincipalB">0</strong>
                 <div>New Regular EMI:</div> <strong id="outEmiB" style="color:#10b981;">0</strong>
                 <div>Total Out-of-Pocket:</div> <strong id="outPocketB">0</strong>
-                <div style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem;">FD Day 1 Sunk Cost:</div> 
-                <strong id="outFdGainsB" style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem; color:#f43f5e;">-0</strong>
+                
+                <div style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem;">FD Sunk Cost:</div> 
+                <strong id="outFdSunkB" style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem; color:#f43f5e;">-0</strong>
+                
+                <div style="grid-column: span 2;">
+                    <span style="font-size: 0.9rem;">Interest Earned (On remaining ₹<span id="labelFdB">0</span> portfolio):</span><br>
+                    <strong id="outFdGainsB" style="color:#10b981;">+0</strong>
+                </div>
             </div>
             <div style="background: #f5f3ff; padding: 0.8rem; border-radius: 6px; margin-top: 1rem;">
                 Net Wealth Lost (Nominal): <strong id="outNetWealthB" style="color:#f43f5e;">0</strong><br>
@@ -255,6 +272,11 @@
 
 <script>
     const formatCurrency = (num) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
+    const formatCurrencyShort = (num) => {
+        if (num >= 10000000) return (num / 10000000).toFixed(2) + ' Cr';
+        if (num >= 100000) return (num / 100000).toFixed(2) + ' L';
+        return formatCurrency(num);
+    };
 
     function switchTab(tab) {
         document.getElementById('btnTabA').classList.remove('active');
@@ -410,8 +432,8 @@
         const tenureMonths = parseInt(document.getElementById('tenureMonths').value) || 0;
         const totalMonths = graceMonths + tenureMonths;
 
-        // Market Reality
-        const fdAmt = parseFloat(document.getElementById('fdAmount').value) || 0;
+        // Market Reality & Portfolio
+        const totalFd = parseFloat(document.getElementById('totalFd').value) || 0;
         const fdRate = parseFloat(document.getElementById('fdRate').value) || 0;
         const infRate = parseFloat(document.getElementById('inflationRate').value) || 0;
         const monthlyInfRate = Math.pow(1 + (infRate / 100), 1 / 12) - 1;
@@ -427,8 +449,9 @@
         
         const runA = buildAmortizationEngine(totalLoanA, blendedRateA, graceMonths, preEmiPaid, intType, compFreq, tenureMonths);
         
-        const fdMaturityVal = fdAmt * Math.pow(1 + (fdRate / 100), totalMonths / 12);
-        const fdGainsA = fdMaturityVal - fdAmt;
+        // Scenario A FD Math: Entire portfolio earns interest
+        const fdMaturityValA = totalFd * Math.pow(1 + (fdRate / 100), totalMonths / 12);
+        const fdGainsA = fdMaturityValA - totalFd;
         const netWealthA = runA.totalOutPocket - fdGainsA;
         
         let pvOutflowsA = 0;
@@ -438,6 +461,7 @@
         const pvNetWealthA = pvOutflowsA - pvFdGainsA;
 
         // SCENARIO B
+        const fdLiquidatedB = parseFloat(document.getElementById('fdLiquidatedB').value) || 0;
         const secAmtB = parseFloat(document.getElementById('secAmountB').value) || 0;
         const secRateB = parseFloat(document.getElementById('secRateB').value) || 0;
         const unsecAmtB = parseFloat(document.getElementById('unsecAmountB').value) || 0;
@@ -448,11 +472,17 @@
 
         const runB = buildAmortizationEngine(totalLoanB, blendedRateB, graceMonths, preEmiPaid, intType, compFreq, tenureMonths);
         
-        const netWealthB = runB.totalOutPocket + fdAmt; 
+        // Scenario B FD Math: Sunk cost + Remaining portfolio earns interest
+        const remainingFdB = Math.max(0, totalFd - fdLiquidatedB);
+        const fdMaturityValB = remainingFdB * Math.pow(1 + (fdRate / 100), totalMonths / 12);
+        const fdGainsB = fdMaturityValB - remainingFdB;
+        const netWealthB = runB.totalOutPocket + fdLiquidatedB - fdGainsB;
         
-        let pvOutflowsB = fdAmt; // FD is Sunk on Day 1
+        let pvOutflowsB = fdLiquidatedB; // FD is Sunk on Day 1
         for (let m = 1; m <= graceMonths; m++) pvOutflowsB += Math.min(preEmiPaid, totalLoanB) / Math.pow(1 + monthlyInfRate, m);
         for (let m = 1; m <= tenureMonths; m++) pvOutflowsB += runB.emi / Math.pow(1 + monthlyInfRate, graceMonths + m);
+        const pvFdGainsB = fdGainsB / Math.pow(1 + monthlyInfRate, totalMonths);
+        const pvNetWealthB = pvOutflowsB - pvFdGainsB;
 
         // UI Updates Scenario A
         document.getElementById('outBaseA').innerText = formatCurrency(totalLoanA);
@@ -460,7 +490,10 @@
         document.getElementById('outRevisedPrincipalA').innerText = formatCurrency(runA.revisedPrincipal);
         document.getElementById('outEmiA').innerText = formatCurrency(runA.emi);
         document.getElementById('outPocketA').innerText = formatCurrency(runA.totalOutPocket);
+        
+        document.getElementById('labelFdA').innerText = formatCurrencyShort(totalFd);
         document.getElementById('outFdGainsA').innerText = `+${formatCurrency(fdGainsA)}`;
+        
         document.getElementById('outNetWealthA').innerText = formatCurrency(netWealthA);
         document.getElementById('outPvA').innerText = formatCurrency(pvNetWealthA);
         document.getElementById('scheduleBodyA').innerHTML = runA.scheduleRowsHtml;
@@ -471,7 +504,11 @@
         document.getElementById('outRevisedPrincipalB').innerText = formatCurrency(runB.revisedPrincipal);
         document.getElementById('outEmiB').innerText = formatCurrency(runB.emi);
         document.getElementById('outPocketB').innerText = formatCurrency(runB.totalOutPocket);
-        document.getElementById('outFdGainsB').innerText = `-${formatCurrency(fdAmt)}`;
+        
+        document.getElementById('outFdSunkB').innerText = `-${formatCurrency(fdLiquidatedB)}`;
+        document.getElementById('labelFdB').innerText = formatCurrencyShort(remainingFdB);
+        document.getElementById('outFdGainsB').innerText = `+${formatCurrency(fdGainsB)}`;
+        
         document.getElementById('outNetWealthB').innerText = formatCurrency(netWealthB);
         document.getElementById('outPvB').innerText = formatCurrency(pvOutflowsB);
         document.getElementById('scheduleBodyB').innerHTML = runB.scheduleRowsHtml;

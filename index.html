@@ -75,7 +75,7 @@
 <div class="container">
     
     <div class="panel" style="grid-column: 1 / -1; background-color: #f8fafc; border: 2px solid #cbd5e1;">
-        <h2 style="color: #0f172a; border-bottom: none; margin-bottom: 0;">Step 1: HEC Paris Capital Requirement Engine</h2>
+        <h2 style="color: #0f172a; border-bottom: none; margin-bottom: 0;">Step 1: Capital Requirement Engine</h2>
         <p style="font-size: 0.9rem; color: #475569; margin-top: 0.2rem;">Calculate the exact INR required, factoring in the currency depreciation that occurs while you draw down living expenses over the 28 months.</p>
         
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; align-items: start; margin-top: 1rem;">
@@ -94,7 +94,7 @@
                 </div>
             </div>
             <div>
-                <div class="form-group"><label>Current Exchange Rate (INR/EUR)</label><input type="number" id="currentFx" value="90"></div>
+                <div class="form-group"><label>Current Exchange Rate (INR/EUR)</label><input type="number" id="currentFx" value="111.1" step="0.1"></div>
                 <div style="background: #1e293b; color: white; padding: 1rem; border-radius: 8px; text-align: center;">
                     <div style="font-size: 0.85rem; color: #94a3b8;">Total True INR Target</div>
                     <strong id="outMasterTargetInr" style="font-size: 1.6rem; color: #38bdf8;">0</strong>
@@ -140,6 +140,25 @@
                     <input type="number" id="unsecRateA" value="11.5" step="0.1">
                 </div>
             </div>
+            
+            <div class="split-grid" style="border-top: 1px dashed #bfdbfe; padding-top: 1rem; margin-top: 0.5rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Interest Type</label>
+                    <select id="interestTypeA">
+                        <option value="simple">Simple</option>
+                        <option value="compound">Compounding</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Compounding Freq</label>
+                    <select id="compoundFreqA">
+                        <option value="monthly">Monthly</option>
+                        <option value="daily">Daily</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+            </div>
+            
             <div id="gapA" class="gap-indicator">Gap: --</div>
         </div>
 
@@ -178,30 +197,58 @@
                     <input type="number" id="unsecRateB" value="12.5" step="0.1">
                 </div>
             </div>
+
+            <div class="split-grid" style="border-top: 1px dashed #ddd6fe; padding-top: 1rem; margin-top: 0.5rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Interest Type</label>
+                    <select id="interestTypeB">
+                        <option value="compound">Compounding</option>
+                        <option value="simple">Simple</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Compounding Freq</label>
+                    <select id="compoundFreqB">
+                        <option value="monthly">Monthly</option>
+                        <option value="daily">Daily</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+            </div>
+
             <div id="gapB" class="gap-indicator">Gap: --</div>
         </div>
 
         <div class="panel">
-            <h2>Shared Repayment Reality</h2>
-            <div class="split-grid">
-                <div class="form-group">
-                    <label>Monthly Pre-EMI Payment (₹)</label>
-                    <input type="number" id="preEmiPayment" value="0" step="1000">
+            <h2>Shared Cashflow Reality</h2>
+            
+            <div class="split-grid" style="background: #f0fdf4; padding: 1rem; border-radius: 8px; border: 1px solid #bbf7d0; margin-bottom: 1.2rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="color: #166534;">Monthly Pre-EMI Payment (€)</label>
+                    <input type="number" id="eurPreEmi" value="0" step="50" style="border-color: #bbf7d0;">
+                    <small style="color: #166534;">Paid in Euros, benefiting from FX spread.</small>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="color: #166534;">Start Pre-EMI (Month #)</label>
+                    <input type="number" id="startPreEmiMonth" value="12" step="1" style="border-color: #bbf7d0;">
+                    <small style="color: #166534;">When your Euro income starts.</small>
+                </div>
+            </div>
+
+            <div class="split-grid">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label>Final Repayment Tenure (Months)</label>
                     <input type="number" id="tenureMonths" value="152" step="1">
                 </div>
-            </div>
-            <div class="split-grid">
                 <div class="form-group" style="margin-bottom: 0;">
                     <label>FD Interest Rate (%)</label>
                     <input type="number" id="fdRate" value="6.5" step="0.1">
                 </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label>Expected INR Inflation (%)</label>
-                    <input type="number" id="inflationRate" value="8.0" step="0.1">
-                </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 1.2rem; margin-bottom: 0;">
+                <label>Expected INR Inflation (%)</label>
+                <input type="number" id="inflationRate" value="8.0" step="0.1">
             </div>
         </div>
     </div>
@@ -217,7 +264,7 @@
             <label style="color: #1d4ed8; font-size: 1.1rem;">Scenario A Performance</label>
             <div style="font-size: 1rem; margin-top: 0.8rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                 <div>Blended Base Rate:</div> <strong id="outBlendedRateA">0%</strong>
-                <div>Final Regular EMI:</div> <strong id="outEmiA" style="color:#10b981;">0</strong>
+                <div>Final Regular EMI (INR):</div> <strong id="outEmiA" style="color:#10b981;">0</strong>
                 
                 <div style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem;">Loan Out-of-Pocket:</div> 
                 <strong id="outPocketA" style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem;">0</strong>
@@ -229,7 +276,7 @@
                 Net Wealth Lost (Nominal INR): <strong id="outNetWealthA" style="color:#f43f5e;">0</strong><br>
                 <div style="margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid #bfdbfe;">
                     <span style="font-size: 0.9rem; font-weight: 600; color: #1d4ed8;">True Cost in Euros (FX Adjusted): <strong id="outFxCostA" style="font-size: 1.1rem;">€0</strong></span><br>
-                    <small style="color: #475569;">Since you earn in EUR to pay INR debt, INR depreciation makes the debt cheaper over time.</small>
+                    <small style="color: #475569;">Includes the dynamically converting Euro Pre-EMI payments.</small>
                 </div>
             </div>
         </div>
@@ -238,7 +285,7 @@
             <label style="color: #6d28d9; font-size: 1.1rem;">Scenario B Performance</label>
             <div style="font-size: 1rem; margin-top: 0.8rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                 <div>Blended Base Rate:</div> <strong id="outBlendedRateB">0%</strong>
-                <div>Final Regular EMI:</div> <strong id="outEmiB" style="color:#10b981;">0</strong>
+                <div>Final Regular EMI (INR):</div> <strong id="outEmiB" style="color:#10b981;">0</strong>
                 
                 <div style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem;">Loan Out-of-Pocket:</div> 
                 <strong id="outPocketB" style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem;">0</strong>
@@ -250,7 +297,7 @@
                 Net Wealth Lost (Nominal INR): <strong id="outNetWealthB" style="color:#f43f5e;">0</strong><br>
                 <div style="margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid #ddd6fe;">
                     <span style="font-size: 0.9rem; font-weight: 600; color: #6d28d9;">True Cost in Euros (FX Adjusted): <strong id="outFxCostB" style="font-size: 1.1rem;">€0</strong></span><br>
-                    <small style="color: #475569;">Because base loan is lower, you benefit less from the FX depreciation shield.</small>
+                    <small style="color: #475569;">Includes the dynamically converting Euro Pre-EMI payments.</small>
                 </div>
             </div>
         </div>
@@ -315,14 +362,13 @@
         const eurTuition = parseFloat(document.getElementById('eurTuition').value) || 0;
         const eurAccomm = parseFloat(document.getElementById('eurAccomm').value) || 0;
         const eurLiving = parseFloat(document.getElementById('eurLiving').value) || 0;
-        const graceMonths = parseInt(document.getElementById('eurMonths').value) || 0; // Same as Grace Period
+        const graceMonths = parseInt(document.getElementById('eurMonths').value) || 0; 
         const currentFx = parseFloat(document.getElementById('currentFx').value) || 0;
         const inrDepRate = parseFloat(document.getElementById('inrDepRate').value) || 0;
         
         const monthlyFxGrowth = Math.pow(1 + (inrDepRate / 100), 1 / 12) - 1;
         const totalEurRequired = eurTuition + ((eurAccomm + eurLiving) * graceMonths);
         
-        // Calculate the progressive INR cost during drawdown
         let totalTargetInr = eurTuition * currentFx; // Tuition paid upfront
         const monthlyLivingEur = eurAccomm + eurLiving;
         for (let m = 1; m <= graceMonths; m++) {
@@ -334,16 +380,28 @@
         document.getElementById('outMasterTargetEur').innerText = `Total ${formatEur(totalEurRequired)} (Spread over ${graceMonths}m)`;
 
         // --- 2. SHARED INPUTS ---
-        const preEmiPaid = parseFloat(document.getElementById('preEmiPayment').value) || 0;
+        const eurPreEmi = parseFloat(document.getElementById('eurPreEmi').value) || 0;
+        const startPreEmiMonth = parseInt(document.getElementById('startPreEmiMonth').value) || 1;
         const tenureMonths = parseInt(document.getElementById('tenureMonths').value) || 0;
         const totalMonths = graceMonths + tenureMonths;
         const fdRate = parseFloat(document.getElementById('fdRate').value) || 0;
 
         // Amortization Helper Function
-        function runScenario(secAmt, secRate, unsecAmt, unsecRate, fdLiquidated, fdKept, targetInr) {
+        function runScenario(secAmt, secRate, unsecAmt, unsecRate, fdLiquidated, fdKept, targetInr, intType, compFreq) {
             const totalLoan = secAmt + unsecAmt;
             const blendedRate = totalLoan > 0 ? ((secAmt * secRate) + (unsecAmt * unsecRate)) / totalLoan : 0;
-            const monthlyRate = blendedRate / 12 / 100;
+            
+            // Effective Monthly Rate Math
+            let effectiveMonthlyRate = 0;
+            if (compFreq === 'monthly' || intType === 'simple') {
+                effectiveMonthlyRate = blendedRate / 12 / 100;
+            } else if (compFreq === 'daily') {
+                effectiveMonthlyRate = Math.pow(1 + (blendedRate / 365 / 100), 365 / 12) - 1;
+            } else if (compFreq === 'yearly') {
+                effectiveMonthlyRate = Math.pow(1 + (blendedRate / 100), 1 / 12) - 1;
+            }
+            
+            const standardMonthlyRate = blendedRate / 12 / 100; // For Simple Int formulas & regular EMI
             
             // Gap Calculation
             const providedCapital = totalLoan + fdLiquidated;
@@ -353,57 +411,89 @@
             let currentPrincipal = totalLoan;
             let accruedUnpaidInterest = 0; 
             let totalOutPocketInr = 0;
-            let totalOutPocketEur = 0; // The true Euro cost
+            let totalOutPocketEur = 0; 
             let scheduleRows = [];
 
-            // Pre-EMI Phase (Simple Interest assumed for student loans)
+            // Pre-EMI Phase
             for (let m = 1; m <= graceMonths; m++) {
-                let interestForMonth = currentPrincipal * monthlyRate;
-                let unpaidForMonth = interestForMonth - preEmiPaid;
-                let actualPaymentThisMonth = 0;
+                // Calculate actual INR paid this month based on FX spread and Start Month
+                let actualPaymentThisMonthEur = 0;
+                let actualPaymentThisMonthInr = 0;
                 
-                if (unpaidForMonth >= 0) {
-                    accruedUnpaidInterest += unpaidForMonth;
-                    actualPaymentThisMonth = preEmiPaid;
-                } else {
-                    let excess = Math.abs(unpaidForMonth);
-                    if (accruedUnpaidInterest > 0) {
-                        let toReduce = Math.min(excess, accruedUnpaidInterest);
-                        accruedUnpaidInterest -= toReduce;
-                        excess -= toReduce;
-                    }
-                    currentPrincipal -= excess;
-                    actualPaymentThisMonth = preEmiPaid;
+                if (m >= startPreEmiMonth && eurPreEmi > 0) {
+                    actualPaymentThisMonthEur = eurPreEmi;
+                    let fxRateNow = currentFx * Math.pow(1 + monthlyFxGrowth, m);
+                    actualPaymentThisMonthInr = eurPreEmi * fxRateNow;
                 }
 
-                totalOutPocketInr += actualPaymentThisMonth;
-                let fxRateNow = currentFx * Math.pow(1 + monthlyFxGrowth, m);
-                let eurCostNow = actualPaymentThisMonth / fxRateNow;
-                totalOutPocketEur += eurCostNow;
+                let interestForMonth = 0;
+
+                if (intType === 'compound') {
+                    interestForMonth = currentPrincipal * effectiveMonthlyRate;
+                    let interestCovered = Math.min(interestForMonth, actualPaymentThisMonthInr);
+                    let surplus = actualPaymentThisMonthInr - interestCovered;
+                    
+                    if (surplus > currentPrincipal) {
+                        surplus = currentPrincipal;
+                        actualPaymentThisMonthInr = interestCovered + surplus;
+                        actualPaymentThisMonthEur = actualPaymentThisMonthInr / (currentFx * Math.pow(1 + monthlyFxGrowth, m)); // adjust eur if loan paid off
+                    }
+
+                    currentPrincipal += (interestForMonth - actualPaymentThisMonthInr);
+                } else {
+                    // Simple Interest
+                    interestForMonth = currentPrincipal * standardMonthlyRate;
+                    let unpaidForMonth = interestForMonth - actualPaymentThisMonthInr;
+                    
+                    if (unpaidForMonth >= 0) {
+                        accruedUnpaidInterest += unpaidForMonth;
+                    } else {
+                        let excess = Math.abs(unpaidForMonth);
+                        if (accruedUnpaidInterest > 0) {
+                            let toReduce = Math.min(excess, accruedUnpaidInterest);
+                            accruedUnpaidInterest -= toReduce;
+                            excess -= toReduce;
+                        }
+                        
+                        let principalPaid = Math.min(excess, currentPrincipal);
+                        currentPrincipal -= principalPaid;
+                        
+                        // Recalculate true actuals if we overpaid the whole loan
+                        if (principalPaid < excess) {
+                            actualPaymentThisMonthInr = interestForMonth + (Math.abs(unpaidForMonth) - excess) + principalPaid;
+                            actualPaymentThisMonthEur = actualPaymentThisMonthInr / (currentFx * Math.pow(1 + monthlyFxGrowth, m));
+                        }
+                    }
+                }
+
+                totalOutPocketInr += actualPaymentThisMonthInr;
+                totalOutPocketEur += actualPaymentThisMonthEur;
+
+                let runningBalance = intType === 'compound' ? currentPrincipal : (currentPrincipal + accruedUnpaidInterest);
 
                 scheduleRows.push(`
                     <tr>
                         <td>${m}</td>
                         <td class="phase-pre">Pre-EMI</td>
-                        <td>${formatCurrency(actualPaymentThisMonth)}</td>
-                        <td style="color: #64748b;">${formatEur(eurCostNow)}</td>
+                        <td>${formatCurrency(actualPaymentThisMonthInr)}</td>
+                        <td style="color: #64748b;">${formatEur(actualPaymentThisMonthEur)}</td>
                         <td>${formatCurrency(interestForMonth)}</td>
-                        <td>${formatCurrency(currentPrincipal + accruedUnpaidInterest)}</td>
+                        <td>${formatCurrency(runningBalance)}</td>
                     </tr>
                 `);
             }
 
-            let revisedPrincipal = currentPrincipal + accruedUnpaidInterest;
+            let revisedPrincipal = intType === 'compound' ? currentPrincipal : (currentPrincipal + accruedUnpaidInterest);
             let emi = 0;
             let emiBalance = revisedPrincipal;
 
             // EMI Phase
-            if (tenureMonths > 0 && monthlyRate > 0 && revisedPrincipal > 0) {
-                emi = revisedPrincipal * monthlyRate * Math.pow(1 + monthlyRate, tenureMonths) / (Math.pow(1 + monthlyRate, tenureMonths) - 1);
+            if (tenureMonths > 0 && standardMonthlyRate > 0 && revisedPrincipal > 0) {
+                emi = revisedPrincipal * standardMonthlyRate * Math.pow(1 + standardMonthlyRate, tenureMonths) / (Math.pow(1 + standardMonthlyRate, tenureMonths) - 1);
                 
                 for(let m = 1; m <= tenureMonths; m++) {
                     if (emiBalance <= 0) break;
-                    let intPortion = emiBalance * monthlyRate;
+                    let intPortion = emiBalance * standardMonthlyRate;
                     let prinPortion = emi - intPortion;
                     
                     let actualEmiThisMonth = emi;
@@ -415,7 +505,6 @@
                     emiBalance -= prinPortion;
                     totalOutPocketInr += actualEmiThisMonth;
                     
-                    // True Euro Cost calculation
                     let fxRateNow = currentFx * Math.pow(1 + monthlyFxGrowth, graceMonths + m);
                     let eurCostNow = actualEmiThisMonth / fxRateNow;
                     totalOutPocketEur += eurCostNow;
@@ -438,7 +527,6 @@
             const fdGains = fdMaturityVal - fdKept;
             const netWealthLost = totalOutPocketInr + fdLiquidated - fdGains;
 
-            // Liquidated FD is a Day 1 Euro Cost
             totalOutPocketEur += (fdLiquidated / currentFx);
 
             return { totalLoan, blendedRate, gap, revisedPrincipal, emi, totalOutPocketInr, totalOutPocketEur, fdGains, netWealthLost, scheduleRowsHtml: scheduleRows.join('') };
@@ -452,7 +540,9 @@
             parseFloat(document.getElementById('unsecRateA').value) || 0,
             parseFloat(document.getElementById('fdLiquidatedA').value) || 0,
             parseFloat(document.getElementById('fdKeptA').value) || 0,
-            totalTargetInr
+            totalTargetInr,
+            document.getElementById('interestTypeA').value,
+            document.getElementById('compoundFreqA').value
         );
 
         const runB = runScenario(
@@ -462,7 +552,9 @@
             parseFloat(document.getElementById('unsecRateB').value) || 0,
             parseFloat(document.getElementById('fdLiquidatedB').value) || 0,
             parseFloat(document.getElementById('fdKeptB').value) || 0,
-            totalTargetInr
+            totalTargetInr,
+            document.getElementById('interestTypeB').value,
+            document.getElementById('compoundFreqB').value
         );
 
         // --- 4. UPDATE UI ---
@@ -478,7 +570,7 @@
         };
 
         updateGap('gapA', runA.gap);
-        document.getElementById('outBlendedRateA').innerText = `${runA.blendedRate.toFixed(2)}%`;
+        document.getElementById('outBlendedRateA').innerText = `${runA.blendedRate.toFixed(0)}%`;
         document.getElementById('outEmiA').innerText = formatCurrency(runA.emi);
         document.getElementById('outPocketA').innerText = formatCurrency(runA.totalOutPocketInr);
         document.getElementById('outFdSunkA').innerText = `-${formatCurrency(parseFloat(document.getElementById('fdLiquidatedA').value)||0)}`;
@@ -488,7 +580,7 @@
         document.getElementById('scheduleBodyA').innerHTML = runA.scheduleRowsHtml;
 
         updateGap('gapB', runB.gap);
-        document.getElementById('outBlendedRateB').innerText = `${runB.blendedRate.toFixed(2)}%`;
+        document.getElementById('outBlendedRateB').innerText = `${runB.blendedRate.toFixed(0)}%`;
         document.getElementById('outEmiB').innerText = formatCurrency(runB.emi);
         document.getElementById('outPocketB').innerText = formatCurrency(runB.totalOutPocketInr);
         document.getElementById('outFdSunkB').innerText = `-${formatCurrency(parseFloat(document.getElementById('fdLiquidatedB').value)||0)}`;
@@ -497,7 +589,7 @@
         document.getElementById('outFxCostB').innerText = formatEur(runB.totalOutPocketEur);
         document.getElementById('scheduleBodyB').innerHTML = runB.scheduleRowsHtml;
 
-        // --- 5. AUTOMATED WINNER LOGIC (BASED ON EURO COST) ---
+        // --- 5. AUTOMATED WINNER LOGIC ---
         const banner = document.getElementById('winnerBanner');
         const diffEur = Math.abs(runA.totalOutPocketEur - runB.totalOutPocketEur);
         if (runA.totalOutPocketEur < runB.totalOutPocketEur) {

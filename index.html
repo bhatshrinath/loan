@@ -32,9 +32,10 @@
         }
         .panel {
             background: var(--card-bg);
-            padding: 2rem;
+            padding: 1.5rem 2rem;
             border-radius: 12px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
         }
         h2 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
         h3 { margin-top: 0; color: var(--text-main); padding-bottom: 0.5rem; font-size: 1.1rem; }
@@ -48,7 +49,6 @@
             background: var(--bg-color); padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;
             border-left: 4px solid var(--primary);
         }
-        .result-value { font-size: 2rem; font-weight: bold; color: var(--primary); }
         .split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         
         /* Table Styles */
@@ -60,13 +60,6 @@
         .phase-pre { color: #f59e0b; font-weight: 600; }
         .phase-emi { color: #10b981; font-weight: 600; }
 
-        .btn-primary {
-            background-color: var(--primary); color: white; padding: 0.7rem; border: none;
-            border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%;
-            transition: background-color 0.2s;
-        }
-        .btn-primary:hover { background-color: #1d4ed8; }
-
         /* Toggle Switch for Tables */
         .tab-container { display: flex; gap: 1rem; margin-bottom: 1rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
         .tab-btn { background: none; border: none; font-size: 1.1rem; font-weight: bold; color: #64748b; cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; }
@@ -77,116 +70,120 @@
 
 <div class="container">
     
-    <div class="panel" style="grid-column: 1 / -1; background-color: #eff6ff; border: 1px solid #bfdbfe;">
-        <h2 style="color: #1d4ed8; border-bottom: none; margin-bottom: 0;">Step 1: Funding Strategy Goal</h2>
-        <p style="margin-top: 0; font-size: 0.95rem; color: #475569;">Set your total capital target (e.g., ₹1.7 Cr) and define your available FD. The tool will automatically calculate the reality of pledging it vs liquidating it.</p>
-        
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; align-items: end;">
+    <div>
+        <div class="panel" style="border: 2px solid #3b82f6;">
+            <h2 style="color: #1d4ed8; border-bottom: none; margin-bottom: 0;">Scenario A: Keep FD (Pledged)</h2>
+            <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.2rem;">Define exactly what the bank offers when they hold your FD.</p>
+            <div class="split-grid">
+                <div class="form-group">
+                    <label>Secured Amount (₹)</label>
+                    <input type="number" id="secAmountA" value="5000000" step="100000">
+                </div>
+                <div class="form-group">
+                    <label>Secured Rate (%)</label>
+                    <input type="number" id="secRateA" value="9.5" step="0.1">
+                </div>
+            </div>
+            <div class="split-grid">
+                <div class="form-group">
+                    <label>Unsecured Amount (₹)</label>
+                    <input type="number" id="unsecAmountA" value="12000000" step="100000">
+                </div>
+                <div class="form-group">
+                    <label>Unsecured Rate (%)</label>
+                    <input type="number" id="unsecRateA" value="11.5" step="0.1">
+                </div>
+            </div>
+        </div>
+
+        <div class="panel" style="border: 2px solid #8b5cf6;">
+            <h2 style="color: #6d28d9; border-bottom: none; margin-bottom: 0;">Scenario B: Liquidate FD</h2>
+            <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.2rem;">Define exactly what the bank offers when you DO NOT pledge the FD.</p>
+            <div class="split-grid">
+                <div class="form-group">
+                    <label>Secured Amount (₹)</label>
+                    <input type="number" id="secAmountB" value="0" step="100000">
+                </div>
+                <div class="form-group">
+                    <label>Secured Rate (%)</label>
+                    <input type="number" id="secRateB" value="9.5" step="0.1">
+                </div>
+            </div>
+            <div class="split-grid">
+                <div class="form-group">
+                    <label>Unsecured Amount (₹)</label>
+                    <input type="number" id="unsecAmountB" value="12000000" step="100000">
+                </div>
+                <div class="form-group">
+                    <label>Unsecured Rate (%)</label>
+                    <input type="number" id="unsecRateB" value="12.5" step="0.1">
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Shared Loan Timeline</h2>
+            <div class="split-grid">
+                <div class="form-group">
+                    <label>Wait Time / Pre-EMI (Months)</label>
+                    <input type="number" id="gracePeriod" value="28" step="1">
+                </div>
+                <div class="form-group">
+                    <label>Monthly Pre-EMI Payment (₹)</label>
+                    <input type="number" id="preEmiPayment" value="0" step="1000">
+                </div>
+            </div>
+            <div class="split-grid">
+                <div class="form-group">
+                    <label>Pre-EMI Interest Type</label>
+                    <select id="interestType">
+                        <option value="compound">Compounding</option>
+                        <option value="simple">Simple</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Compounding Frequency</label>
+                    <select id="compoundFreq">
+                        <option value="daily">Daily</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+            </div>
             <div class="form-group" style="margin-bottom: 0;">
-                <label>Total Target Expense (₹)</label>
-                <input type="number" id="targetTotal" value="17000000" step="100000">
-            </div>
-            <div class="form-group" style="margin-bottom: 0;">
-                <label>FD / Savings Available (₹)</label>
-                <input type="number" id="targetFd" value="5000000" step="100000">
-            </div>
-            <div class="form-group" style="margin-bottom: 0;">
-                <label>Base Loan Needed (If Liqudated)</label>
-                <div class="result-value" id="outTargetLoan" style="font-size: 1.6rem; color: #1d4ed8; padding-bottom: 0.3rem;">0</div>
-            </div>
-            <div class="form-group" style="margin-bottom: 0;">
-                <button class="btn-primary" onclick="applyFundingStrategy()">Sync & Calculate &darr;</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="panel">
-        <h2>Loan Parameters (Scenario A: Pledged FD)</h2>
-        <p style="font-size: 0.85rem; color: #64748b;">If you keep the FD, how much is secured against it vs unsecured?</p>
-        
-        <div class="split-grid">
-            <div class="form-group">
-                <label>Secured Loan Amount (₹)</label>
-                <input type="number" id="secAmount" value="5000000" step="100000">
-            </div>
-            <div class="form-group">
-                <label>Secured Int. Rate (%)</label>
-                <input type="number" id="secRate" value="9.5" step="0.1">
+                <label>Final Repayment Tenure (Months)</label>
+                <input type="number" id="tenureMonths" value="152" step="1">
             </div>
         </div>
 
-        <div class="split-grid">
-            <div class="form-group">
-                <label>Unsecured Loan Amount (₹)</label>
-                <input type="number" id="unsecAmount" value="12000000" step="100000">
+        <div class="panel">
+            <h2>Market Reality Factors</h2>
+            <div class="split-grid">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>FD Amount in Question (₹)</label>
+                    <input type="number" id="fdAmount" value="5000000" step="100000">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>FD Interest Rate (%)</label>
+                    <input type="number" id="fdRate" value="6.5" step="0.1">
+                </div>
             </div>
-            <div class="form-group">
-                <label>Unsecured Int. Rate (%)</label>
-                <input type="number" id="unsecRate" value="11.5" step="0.1">
-            </div>
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">
-
-        <div class="split-grid">
-            <div class="form-group">
-                <label>Wait Time / Pre-EMI (Months)</label>
-                <input type="number" id="gracePeriod" value="28" step="1">
-            </div>
-            <div class="form-group">
-                <label>Monthly Pre-EMI Payment (₹)</label>
-                <input type="number" id="preEmiPayment" value="0" step="1000">
-            </div>
-        </div>
-
-        <div class="split-grid">
-            <div class="form-group">
-                <label>Pre-EMI Interest Type</label>
-                <select id="interestType">
-                    <option value="compound">Compounding</option>
-                    <option value="simple">Simple</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Compounding Frequency</label>
-                <select id="compoundFreq">
-                    <option value="daily">Daily</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Final Repayment Tenure (Months)</label>
-            <input type="number" id="tenureMonths" value="152" step="1">
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">
-        
-        <h3>Market Reality Factors</h3>
-        <div class="split-grid">
-            <div class="form-group">
-                <label>Current FD Interest Rate (%)</label>
-                <input type="number" id="fdRate" value="6.5" step="0.1">
-            </div>
-            <div class="form-group">
+            <div class="form-group" style="margin-top: 1.2rem; margin-bottom: 0;">
                 <label>Expected Inflation Rate (%)</label>
                 <input type="number" id="inflationRate" value="8.0" step="0.1">
             </div>
         </div>
     </div>
 
-    <div class="panel">
+    <div class="panel" style="height: fit-content;">
         <h2>Scenario Comparison (Market Reality)</h2>
         
         <div class="result-box" style="border-left-color: #3b82f6;">
             <label style="color: #1d4ed8; font-size: 1.1rem;">Scenario A: Keep FD as Collateral</label>
-            <small>Borrow full ₹1.7Cr. Enjoys a blended interest rate.</small>
-            
             <div style="font-size: 1rem; margin-top: 0.8rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <div>Total Base Loan:</div> <strong id="outBaseA">0</strong>
                 <div>Blended Base Rate:</div> <strong id="outBlendedRateA">0%</strong>
-                <div>Revised Principal (Pre-EMI):</div> <strong id="outRevisedPrincipalA">0</strong>
+                <div>Revised Principal:</div> <strong id="outRevisedPrincipalA">0</strong>
                 <div>Final Regular EMI:</div> <strong id="outEmiA" style="color:#10b981;">0</strong>
                 <div>Total Out-of-Pocket:</div> <strong id="outPocketA">0</strong>
                 <div style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem;">FD Maturity Gains:</div> 
@@ -199,12 +196,11 @@
         </div>
 
         <div class="result-box" style="border-left-color: #8b5cf6;">
-            <label style="color: #6d28d9; font-size: 1.1rem;">Scenario B: Liquidate FD (Unsecured)</label>
-            <small>Borrow the gap. FD is gone, so the remaining loan defaults to Unsecured Rate.</small>
-            
+            <label style="color: #6d28d9; font-size: 1.1rem;">Scenario B: Liquidate FD</label>
             <div style="font-size: 1rem; margin-top: 0.8rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                <div>New Base Rate (Unsecured):</div> <strong id="outBlendedRateB">0%</strong>
-                <div>Revised Principal (Pre-EMI):</div> <strong id="outRevisedPrincipalB">0</strong>
+                <div>Total Base Loan:</div> <strong id="outBaseB">0</strong>
+                <div>Blended Base Rate:</div> <strong id="outBlendedRateB">0%</strong>
+                <div>Revised Principal:</div> <strong id="outRevisedPrincipalB">0</strong>
                 <div>New Regular EMI:</div> <strong id="outEmiB" style="color:#10b981;">0</strong>
                 <div>Total Out-of-Pocket:</div> <strong id="outPocketB">0</strong>
                 <div style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem;">FD Day 1 Sunk Cost:</div> 
@@ -219,8 +215,8 @@
 
     <div class="panel" style="grid-column: 1 / -1;">
         <div class="tab-container">
-            <button class="tab-btn active" id="btnTabA" onclick="switchTab('A')">View Scenario A Cashflow (Secured+Unsecured)</button>
-            <button class="tab-btn" id="btnTabB" onclick="switchTab('B')">View Scenario B Cashflow (Unsecured Only)</button>
+            <button class="tab-btn active" id="btnTabA" onclick="switchTab('A')">View Scenario A Cashflow</button>
+            <button class="tab-btn" id="btnTabB" onclick="switchTab('B')">View Scenario B Cashflow</button>
         </div>
         
         <div class="table-container" id="tableContainerA">
@@ -270,33 +266,7 @@
         document.getElementById(`tableContainer${tab}`).style.display = 'block';
     }
 
-    function updateTargetPreview() {
-        const target = parseFloat(document.getElementById('targetTotal').value) || 0;
-        const fd = parseFloat(document.getElementById('targetFd').value) || 0;
-        const required = Math.max(0, target - fd);
-        document.getElementById('outTargetLoan').innerText = formatCurrency(required);
-    }
-
-    function applyFundingStrategy() {
-        const target = parseFloat(document.getElementById('targetTotal').value) || 0;
-        const fd = parseFloat(document.getElementById('targetFd').value) || 0;
-        
-        // Auto-allocate: Assume FD is 100% pledged as Secured Loan, rest is Unsecured
-        document.getElementById('secAmount').value = fd;
-        document.getElementById('unsecAmount').value = Math.max(0, target - fd);
-        
-        calculate();
-        
-        const btn = document.querySelector('.btn-primary');
-        btn.innerText = "Synced ✓";
-        btn.style.backgroundColor = "#10b981";
-        setTimeout(() => {
-            btn.innerText = "Sync & Calculate ↓";
-            btn.style.backgroundColor = "";
-        }, 1500);
-    }
-
-    // A helper function to build the entire amortization schedule for a given scenario
+    // Amortization Engine
     function buildAmortizationEngine(baseLoan, annualRate, graceMonths, preEmiPaid, intType, compFreq, tenureMonths) {
         let currentPrincipal = baseLoan;
         let accruedUnpaidInterest = 0; 
@@ -304,7 +274,10 @@
         let scheduleRows = [];
         let totalOutPocket = 0;
 
-        // Rate setup
+        if (baseLoan <= 0) {
+            return { revisedPrincipal: 0, emi: 0, totalOutPocket: 0, scheduleRowsHtml: '' };
+        }
+
         if (compFreq === 'monthly') {
             effectiveMonthlyRate = annualRate / 12 / 100;
         } else if (compFreq === 'daily') {
@@ -326,7 +299,6 @@
                 interestCoveredThisMonth = Math.min(interestForMonth, preEmiPaid);
                 let surplus = preEmiPaid - interestCoveredThisMonth;
                 
-                // If payment is higher than loan balance, cap it
                 if (surplus > currentPrincipal) {
                     surplus = currentPrincipal;
                     actualPaymentThisMonth = interestCoveredThisMonth + surplus;
@@ -337,7 +309,6 @@
                 principalPaidThisMonth = surplus;
                 currentPrincipal += (interestForMonth - actualPaymentThisMonth);
             } else {
-                // Simple Interest
                 interestForMonth = currentPrincipal * (annualRate / 12 / 100);
                 let unpaidForMonth = interestForMonth - preEmiPaid;
                 
@@ -356,7 +327,6 @@
                             interestCoveredThisMonth += accruedUnpaidInterest; 
                             accruedUnpaidInterest = 0;
                             
-                            // Remaining excess reduces principal
                             principalPaidThisMonth = Math.min(excessPayment, currentPrincipal);
                             actualPaymentThisMonth = interestCoveredThisMonth + principalPaidThisMonth;
                             currentPrincipal -= principalPaidThisMonth;
@@ -388,7 +358,6 @@
             `);
         }
 
-        // Final Revised Principal
         let revisedPrincipal = intType === 'compound' ? currentPrincipal : (currentPrincipal + accruedUnpaidInterest);
 
         // EMI PHASE
@@ -429,47 +398,35 @@
             }
         }
 
-        return {
-            revisedPrincipal,
-            emi,
-            totalOutPocket,
-            scheduleRowsHtml: scheduleRows.join('')
-        };
+        return { revisedPrincipal, emi, totalOutPocket, scheduleRowsHtml: scheduleRows.join('') };
     }
 
     function calculate() {
-        // Inputs
-        const targetTotal = parseFloat(document.getElementById('targetTotal').value) || 0;
-        const fdAmt = parseFloat(document.getElementById('targetFd').value) || 0;
-        
-        const secAmt = parseFloat(document.getElementById('secAmount').value) || 0;
-        const secRate = parseFloat(document.getElementById('secRate').value) || 0;
-        const unsecAmt = parseFloat(document.getElementById('unsecAmount').value) || 0;
-        const unsecRate = parseFloat(document.getElementById('unsecRate').value) || 0;
-        
+        // Shared Inputs
         const graceMonths = parseInt(document.getElementById('gracePeriod').value) || 0;
         const preEmiPaid = parseFloat(document.getElementById('preEmiPayment').value) || 0;
         const intType = document.getElementById('interestType').value;
         const compFreq = document.getElementById('compoundFreq').value;
         const tenureMonths = parseInt(document.getElementById('tenureMonths').value) || 0;
+        const totalMonths = graceMonths + tenureMonths;
 
+        // Market Reality
+        const fdAmt = parseFloat(document.getElementById('fdAmount').value) || 0;
         const fdRate = parseFloat(document.getElementById('fdRate').value) || 0;
         const infRate = parseFloat(document.getElementById('inflationRate').value) || 0;
         const monthlyInfRate = Math.pow(1 + (infRate / 100), 1 / 12) - 1;
-        const totalMonths = graceMonths + tenureMonths;
 
-        // ==========================================
-        // SCENARIO A: Keep FD, Borrow Full Amount
-        // ==========================================
-        const totalLoanA = secAmt + unsecAmt;
-        let blendedRateA = 0;
-        if (totalLoanA > 0) {
-            blendedRateA = ((secAmt * secRate) + (unsecAmt * unsecRate)) / totalLoanA;
-        }
-
+        // SCENARIO A
+        const secAmtA = parseFloat(document.getElementById('secAmountA').value) || 0;
+        const secRateA = parseFloat(document.getElementById('secRateA').value) || 0;
+        const unsecAmtA = parseFloat(document.getElementById('unsecAmountA').value) || 0;
+        const unsecRateA = parseFloat(document.getElementById('unsecRateA').value) || 0;
+        
+        const totalLoanA = secAmtA + unsecAmtA;
+        let blendedRateA = totalLoanA > 0 ? ((secAmtA * secRateA) + (unsecAmtA * unsecRateA)) / totalLoanA : 0;
+        
         const runA = buildAmortizationEngine(totalLoanA, blendedRateA, graceMonths, preEmiPaid, intType, compFreq, tenureMonths);
         
-        // PV & Net Wealth A
         const fdMaturityVal = fdAmt * Math.pow(1 + (fdRate / 100), totalMonths / 12);
         const fdGainsA = fdMaturityVal - fdAmt;
         const netWealthA = runA.totalOutPocket - fdGainsA;
@@ -480,26 +437,25 @@
         const pvFdGainsA = fdGainsA / Math.pow(1 + monthlyInfRate, totalMonths);
         const pvNetWealthA = pvOutflowsA - pvFdGainsA;
 
-        // ==========================================
-        // SCENARIO B: Liquidate FD, Borrow Unsecured
-        // ==========================================
-        // The reality constraint: if you liquidate FD, you lose that much collateral.
-        // So the remaining target must be funded at the Unsecured Rate.
-        let requiredLoanB = Math.max(0, targetTotal - fdAmt);
-        let rateB = requiredLoanB > 0 ? unsecRate : 0; // Forced to Unsecured Rate
+        // SCENARIO B
+        const secAmtB = parseFloat(document.getElementById('secAmountB').value) || 0;
+        const secRateB = parseFloat(document.getElementById('secRateB').value) || 0;
+        const unsecAmtB = parseFloat(document.getElementById('unsecAmountB').value) || 0;
+        const unsecRateB = parseFloat(document.getElementById('unsecRateB').value) || 0;
 
-        const runB = buildAmortizationEngine(requiredLoanB, rateB, graceMonths, preEmiPaid, intType, compFreq, tenureMonths);
+        const totalLoanB = secAmtB + unsecAmtB;
+        let blendedRateB = totalLoanB > 0 ? ((secAmtB * secRateB) + (unsecAmtB * unsecRateB)) / totalLoanB : 0;
+
+        const runB = buildAmortizationEngine(totalLoanB, blendedRateB, graceMonths, preEmiPaid, intType, compFreq, tenureMonths);
         
-        // PV & Net Wealth B
-        const netWealthB = runB.totalOutPocket + fdAmt; // FD is a Day 1 Sunk Cost
+        const netWealthB = runB.totalOutPocket + fdAmt; 
         
-        let pvOutflowsB = fdAmt; // Sunk on Day 1
-        for (let m = 1; m <= graceMonths; m++) pvOutflowsB += Math.min(preEmiPaid, requiredLoanB) / Math.pow(1 + monthlyInfRate, m); // approx preEmi
+        let pvOutflowsB = fdAmt; // FD is Sunk on Day 1
+        for (let m = 1; m <= graceMonths; m++) pvOutflowsB += Math.min(preEmiPaid, totalLoanB) / Math.pow(1 + monthlyInfRate, m);
         for (let m = 1; m <= tenureMonths; m++) pvOutflowsB += runB.emi / Math.pow(1 + monthlyInfRate, graceMonths + m);
 
-        // ==========================================
-        // UPDATE UI
-        // ==========================================
+        // UI Updates Scenario A
+        document.getElementById('outBaseA').innerText = formatCurrency(totalLoanA);
         document.getElementById('outBlendedRateA').innerText = `${blendedRateA.toFixed(2)}%`;
         document.getElementById('outRevisedPrincipalA').innerText = formatCurrency(runA.revisedPrincipal);
         document.getElementById('outEmiA').innerText = formatCurrency(runA.emi);
@@ -509,7 +465,9 @@
         document.getElementById('outPvA').innerText = formatCurrency(pvNetWealthA);
         document.getElementById('scheduleBodyA').innerHTML = runA.scheduleRowsHtml;
 
-        document.getElementById('outBlendedRateB').innerText = `${rateB.toFixed(2)}%`;
+        // UI Updates Scenario B
+        document.getElementById('outBaseB').innerText = formatCurrency(totalLoanB);
+        document.getElementById('outBlendedRateB').innerText = `${blendedRateB.toFixed(2)}%`;
         document.getElementById('outRevisedPrincipalB').innerText = formatCurrency(runB.revisedPrincipal);
         document.getElementById('outEmiB').innerText = formatCurrency(runB.emi);
         document.getElementById('outPocketB').innerText = formatCurrency(runB.totalOutPocket);
@@ -520,13 +478,9 @@
     }
 
     document.querySelectorAll('input, select').forEach(element => {
-        element.addEventListener('input', () => {
-            updateTargetPreview();
-            calculate();
-        });
+        element.addEventListener('input', calculate);
     });
 
-    updateTargetPreview();
     calculate();
 </script>
 </body>

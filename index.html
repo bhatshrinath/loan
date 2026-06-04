@@ -59,18 +59,49 @@
         tr:hover { background-color: #f1f5f9; }
         .phase-pre { color: #f59e0b; font-weight: 600; }
         .phase-emi { color: #10b981; font-weight: 600; }
+
+        .btn-primary {
+            background-color: var(--primary); color: white; padding: 0.7rem; border: none;
+            border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; width: 100%;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover { background-color: #1d4ed8; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    
+    <div class="panel" style="grid-column: 1 / -1; background-color: #eff6ff; border: 1px solid #bfdbfe;">
+        <h2 style="color: #1d4ed8; border-bottom: none; margin-bottom: 0;">Step 1: Funding Strategy Goal</h2>
+        <p style="margin-top: 0; font-size: 0.95rem; color: #475569;">Set your total capital target (e.g., ₹1.7 Cr) and define how much of your own savings you want to liquidate.</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; align-items: end;">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Total Target Expense (₹)</label>
+                <input type="number" id="targetTotal" value="17000000" step="100000">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>FD / Savings Allocated (₹)</label>
+                <input type="number" id="targetFd" value="5000000" step="100000">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Loan Needed</label>
+                <div class="result-value" id="outTargetLoan" style="font-size: 1.6rem; color: #1d4ed8; padding-bottom: 0.3rem;">0</div>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <button class="btn-primary" onclick="applyFundingStrategy()">Apply to Scenario &darr;</button>
+            </div>
+        </div>
+    </div>
+
     <div class="panel">
         <h2>Loan Parameters</h2>
         
         <div class="split-grid">
             <div class="form-group">
                 <label>Secured Loan Amount (₹)</label>
-                <input type="number" id="secAmount" value="15000000" step="100000">
+                <input type="number" id="secAmount" value="12000000" step="100000">
             </div>
             <div class="form-group">
                 <label>Secured Int. Rate (%)</label>
@@ -85,7 +116,7 @@
             </div>
             <div class="form-group">
                 <label>Unsecured Int. Rate (%)</label>
-                <input type="number" id="unsecRate" value="12.0" step="0.1">
+                <input type="number" id="unsecRate" value="0.0" step="0.1">
             </div>
         </div>
 
@@ -94,11 +125,11 @@
         <div class="split-grid">
             <div class="form-group">
                 <label>Wait Time / Pre-EMI (Months)</label>
-                <input type="number" id="gracePeriod" value="12" step="1">
+                <input type="number" id="gracePeriod" value="28" step="1">
             </div>
             <div class="form-group">
                 <label>Monthly Pre-EMI Payment (₹)</label>
-                <input type="number" id="preEmiPayment" value="15000" step="1000">
+                <input type="number" id="preEmiPayment" value="0" step="1000">
             </div>
         </div>
 
@@ -113,8 +144,8 @@
             <div class="form-group">
                 <label>Compounding Frequency</label>
                 <select id="compoundFreq">
-                    <option value="monthly">Monthly</option>
                     <option value="daily">Daily</option>
+                    <option value="monthly">Monthly</option>
                     <option value="yearly">Yearly</option>
                 </select>
             </div>
@@ -122,7 +153,7 @@
 
         <div class="form-group">
             <label>Final Repayment Tenure (Months)</label>
-            <input type="number" id="tenureMonths" value="180" step="1">
+            <input type="number" id="tenureMonths" value="152" step="1">
         </div>
 
         <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">
@@ -130,7 +161,7 @@
         <h3>Market Reality Factors</h3>
         <div class="split-grid">
             <div class="form-group">
-                <label>Current FD Savings (₹)</label>
+                <label>Available FD Savings (₹)</label>
                 <input type="number" id="fdAmount" value="5000000" step="100000">
             </div>
             <div class="form-group">
@@ -222,6 +253,38 @@
 <script>
     const formatCurrency = (num) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
 
+    // Dynamic Funding Target Preview
+    function updateTargetPreview() {
+        const target = parseFloat(document.getElementById('targetTotal').value) || 0;
+        const fd = parseFloat(document.getElementById('targetFd').value) || 0;
+        const required = Math.max(0, target - fd);
+        document.getElementById('outTargetLoan').innerText = formatCurrency(required);
+    }
+
+    // Apply the Strategy to the main inputs
+    function applyFundingStrategy() {
+        const target = parseFloat(document.getElementById('targetTotal').value) || 0;
+        const fd = parseFloat(document.getElementById('targetFd').value) || 0;
+        const requiredLoan = Math.max(0, target - fd);
+        
+        // Push to main inputs
+        document.getElementById('secAmount').value = requiredLoan;
+        document.getElementById('unsecAmount').value = 0; // Clear unsecured to avoid confusion
+        document.getElementById('fdAmount').value = fd; // Sync FD for Market Reality
+        
+        // Trigger full calculation
+        calculate();
+        
+        // Visual feedback
+        const btn = document.querySelector('.btn-primary');
+        btn.innerText = "Applied ✓";
+        btn.style.backgroundColor = "#10b981";
+        setTimeout(() => {
+            btn.innerText = "Apply to Scenario ↓";
+            btn.style.backgroundColor = "";
+        }, 1500);
+    }
+
     function calculate() {
         // 1. Fetch Inputs
         const secAmt = parseFloat(document.getElementById('secAmount').value) || 0;
@@ -247,7 +310,6 @@
             return;
         }
 
-        // Weighted Average Interest Rate (Blended Rate)
         const blendedAnnualRate = ((secAmt * secRate) + (unsecAmt * unsecRate)) / totalBaseLoan;
         
         // 3. Grace Period (Pre-EMI) Calculation
@@ -257,7 +319,6 @@
         let totalPreEmiInterestGenerated = 0;
         let scheduleRows = [];
 
-        // Determine effective monthly rate
         if (compFreq === 'monthly') {
             effectiveMonthlyRate = blendedAnnualRate / 12 / 100;
         } else if (compFreq === 'daily') {
@@ -281,7 +342,6 @@
                 
                 currentPrincipal += (interestForMonth - preEmiPaid);
             } else {
-                // SIMPLE INTEREST WATERFALL LOGIC
                 interestForMonth = currentPrincipal * (blendedAnnualRate / 12 / 100);
                 totalPreEmiInterestGenerated += interestForMonth;
 
@@ -328,7 +388,6 @@
             `);
         }
 
-        // Final Revised Principal
         let revisedPrincipal = intType === 'compound' ? currentPrincipal : (currentPrincipal + accruedUnpaidInterest);
 
         // 4. EMI Calculation Phase
@@ -365,7 +424,7 @@
         const grandTotalInterest = totalPreEmiInterestGenerated + totalRepaymentInterest;
         const totalOutOfPocket = (preEmiPaid * graceMonths) + (emi * nMonths);
 
-        // --- 5. MARKET REALITY & OPPORTUNITY COST MODULE ---
+        // 5. MARKET REALITY & OPPORTUNITY COST MODULE
         const totalMonthsAllPhases = graceMonths + nMonths;
         const monthlyInflationRate = Math.pow(1 + (infRate / 100), 1 / 12) - 1;
 
@@ -383,8 +442,11 @@
         const pvFdGains = (fdMaturity - fdAmt) / Math.pow(1 + monthlyInflationRate, totalMonthsAllPhases);
         const pvNetWealthA = pvOutflowsA - pvFdGains;
 
-        // SCENARIO B: Liquidate FD to lower loan
-        let reducedBaseLoan = totalBaseLoan - fdAmt;
+        // SCENARIO B: Liquidate FD
+        let targetTotalFromTop = parseFloat(document.getElementById('targetTotal').value) || 0;
+        let reducedBaseLoan = targetTotalFromTop - fdAmt; // Use Master Target for base
+        if (reducedBaseLoan < 0) reducedBaseLoan = 0;
+
         let reducedEmi = 0;
         let totalReducedOutOfPocket = 0;
         let pvNetWealthB = 0;
@@ -398,7 +460,7 @@
             
             reducedEmi = reducedRevisedPrincipal * standardMonthlyRate * Math.pow(1 + standardMonthlyRate, nMonths) / (Math.pow(1 + standardMonthlyRate, nMonths) - 1);
             
-            pvNetWealthB += fdAmt; // Day 1 Sunk Cost
+            pvNetWealthB += fdAmt; 
             
             let preEmiToPay = Math.min(reducedPreEmiInterest / graceMonths, preEmiPaid); 
             for (let m = 1; m <= graceMonths; m++) {
@@ -410,14 +472,13 @@
                 totalReducedOutOfPocket += reducedEmi;
             }
             netWealthLostB = totalReducedOutOfPocket + fdAmt;
-        } else if (reducedBaseLoan <= 0) {
-            // Loan completely covered by FD
+        } else {
             reducedEmi = 0;
-            netWealthLostB = totalBaseLoan; // Just the exact amount you spent from FD
-            pvNetWealthB = totalBaseLoan;
+            netWealthLostB = targetTotalFromTop; 
+            pvNetWealthB = targetTotalFromTop;
         }
 
-        // --- 6. UPDATE UI ---
+        // 6. UPDATE UI
         document.getElementById('outBaseLoan').innerText = formatCurrency(totalBaseLoan);
         document.getElementById('outBlendedRate').innerText = `Blended Annual Rate: ${blendedAnnualRate.toFixed(2)}%`;
         document.getElementById('outRevisedPrincipal').innerText = formatCurrency(revisedPrincipal);
@@ -454,10 +515,14 @@
 
     // Attach listeners
     document.querySelectorAll('input, select').forEach(element => {
-        element.addEventListener('input', calculate);
+        element.addEventListener('input', () => {
+            updateTargetPreview();
+            calculate();
+        });
     });
 
-    // Initial calculation
+    // Initial load setup
+    updateTargetPreview();
     calculate();
 </script>
 </body>

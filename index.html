@@ -111,7 +111,7 @@
             </div>
             <div class="form-group">
                 <label>Secured Int. Rate (%)</label>
-                <input type="number" id="secRate" value="10.0" step="0.1">
+                <input type="number" id="secRate" value="9.5" step="0.1">
             </div>
         </div>
 
@@ -122,7 +122,7 @@
             </div>
             <div class="form-group">
                 <label>Unsecured Int. Rate (%)</label>
-                <input type="number" id="unsecRate" value="13.5" step="0.1">
+                <input type="number" id="unsecRate" value="11.5" step="0.1">
             </div>
         </div>
 
@@ -131,11 +131,11 @@
         <div class="split-grid">
             <div class="form-group">
                 <label>Wait Time / Pre-EMI (Months)</label>
-                <input type="number" id="gracePeriod" value="12" step="1">
+                <input type="number" id="gracePeriod" value="28" step="1">
             </div>
             <div class="form-group">
                 <label>Monthly Pre-EMI Payment (₹)</label>
-                <input type="number" id="preEmiPayment" value="15000" step="1000">
+                <input type="number" id="preEmiPayment" value="0" step="1000">
             </div>
         </div>
 
@@ -143,15 +143,15 @@
             <div class="form-group">
                 <label>Pre-EMI Interest Type</label>
                 <select id="interestType">
-                    <option value="simple">Simple</option>
                     <option value="compound">Compounding</option>
+                    <option value="simple">Simple</option>
                 </select>
             </div>
             <div class="form-group">
                 <label>Compounding Frequency</label>
                 <select id="compoundFreq">
-                    <option value="monthly">Monthly</option>
                     <option value="daily">Daily</option>
+                    <option value="monthly">Monthly</option>
                     <option value="yearly">Yearly</option>
                 </select>
             </div>
@@ -159,7 +159,7 @@
 
         <div class="form-group">
             <label>Final Repayment Tenure (Months)</label>
-            <input type="number" id="tenureMonths" value="180" step="1">
+            <input type="number" id="tenureMonths" value="152" step="1">
         </div>
 
         <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">

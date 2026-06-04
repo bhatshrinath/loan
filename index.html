@@ -54,13 +54,13 @@
             </div>
             <div>
                 <div class="form-group"><label>Monthly Accomm. (€)</label><input type="number" id="eurAccomm" value="1100"></div>
-                <div class="form-group"><label>Monthly Living (€)</label><input type="number" id="eurLiving" value="1500"></div>
+                <div class="form-group"><label>Monthly Living (€)</label><input type="number" id="eurLiving" value="1400"></div>
             </div>
             <div>
                 <div class="form-group"><label>Program + Grace (Months)</label><input type="number" id="eurMonths" value="28"></div>
                 <div class="form-group" style="background: #e0f2fe; padding: 0.5rem; border-radius: 6px;">
                     <label style="color: #0369a1;">Expected INR Dep. vs EUR (%)</label>
-                    <input type="number" id="inrDepRate" value="4.6" step="0.1" style="border-color: #bae6fd;">
+                    <input type="number" id="inrDepRate" value="7" step="0.1" style="border-color: #bae6fd;">
                 </div>
             </div>
             <div>
@@ -86,7 +86,7 @@
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
                     <label style="color: #1d4ed8;">FD Liquidated (₹)</label>
-                    <input type="number" id="fdLiquidatedA" value="3500000" step="100000">
+                    <input type="number" id="fdLiquidatedA" value="3000000" step="100000">
                 </div>
             </div>
 
@@ -95,7 +95,7 @@
                 <div class="form-group"><label>Secured Rate (%)</label><input type="number" id="secRateA" value="9.5" step="0.1"></div>
             </div>
             <div class="split-grid">
-                <div class="form-group"><label>Unsecured Loan (₹)</label><input type="number" id="unsecAmountA" value="0" step="100000"></div>
+                <div class="form-group"><label>Unsecured Loan (₹)</label><input type="number" id="unsecAmountA" value="2280571" step="100000"></div>
                 <div class="form-group"><label>Unsecured Rate (%)</label><input type="number" id="unsecRateA" value="11.5" step="0.1"></div>
             </div>
             
@@ -103,15 +103,15 @@
                 <div class="form-group" style="margin-bottom: 0;">
                     <label>Interest Type</label>
                     <select id="interestTypeA">
-                        <option value="simple">Simple</option>
                         <option value="compound">Compounding</option>
+                        <option value="simple">Simple</option>
                     </select>
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
                     <label>Compounding Freq</label>
                     <select id="compoundFreqA">
-                        <option value="monthly">Monthly</option>
                         <option value="daily">Daily</option>
+                        <option value="monthly">Monthly</option>
                         <option value="yearly">Yearly</option>
                     </select>
                 </div>
@@ -126,11 +126,11 @@
             <div class="split-grid" style="background: #f5f3ff; padding: 1rem; border-radius: 8px; margin-bottom: 1.2rem;">
                 <div class="form-group" style="margin-bottom: 0;">
                     <label style="color: #6d28d9;">FD Kept Untouched (₹)</label>
-                    <input type="number" id="fdKeptB" value="1000000" step="100000">
+                    <input type="number" id="fdKeptB" value="1719429" step="100000">
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
                     <label style="color: #6d28d9;">FD Liquidated (₹)</label>
-                    <input type="number" id="fdLiquidatedB" value="6500000" step="100000">
+                    <input type="number" id="fdLiquidatedB" value="5280571" step="100000">
                 </div>
             </div>
 
@@ -139,8 +139,8 @@
                 <div class="form-group"><label>Secured Rate (%)</label><input type="number" id="secRateB" value="9.5" step="0.1"></div>
             </div>
             <div class="split-grid">
-                <div class="form-group"><label>Unsecured Loan (₹)</label><input type="number" id="unsecAmountB" value="12000000" step="100000"></div>
-                <div class="form-group"><label>Unsecured Rate (%)</label><input type="number" id="unsecRateB" value="12.5" step="0.1"></div>
+                <div class="form-group"><label>Unsecured Loan (₹)</label><input type="number" id="unsecAmountB" value="13500000" step="100000"></div>
+                <div class="form-group"><label>Unsecured Rate (%)</label><input type="number" id="unsecRateB" value="11.25" step="0.1"></div>
             </div>
 
             <div class="split-grid" style="border-top: 1px dashed #ddd6fe; padding-top: 1rem; margin-top: 0.5rem;">
@@ -185,7 +185,7 @@
             
             <div class="form-group" style="margin-top: 1.2rem; margin-bottom: 0;">
                 <label>Euro Discount Rate / EUR Inflation (%)</label>
-                <input type="number" id="eurDiscountRate" value="2.5" step="0.1">
+                <input type="number" id="eurDiscountRate" value="2" step="0.1">
                 <small style="color: #64748b;">Used to calculate the Real Net Present Value (NPV) of your future Euro cash flows.</small>
             </div>
         </div>

@@ -150,6 +150,11 @@
             <label>Total Interest Payable (Over Life of Loan)</label>
             <div class="result-value" style="color: #f43f5e;" id="outTotalInterest">0</div>
         </div>
+        <div class="result-box" style="border-left-color: #8b5cf6;">
+            <label>Total Out-of-Pocket Payment</label>
+            <div class="result-value" style="color: #8b5cf6;" id="outTotalPocket">0</div>
+            <small>Actual cash paid (Pre-EMI phases + all regular EMIs).</small>
+        </div>
     </div>
 
     <div class="panel" style="grid-column: 1 / -1;">
@@ -318,12 +323,15 @@
         }
 
         const grandTotalInterest = totalPreEmiInterestGenerated + totalRepaymentInterest;
-
+        // Total actual cash leaving the pocket
+        const totalOutOfPocket = (preEmiPaid * graceMonths) + (emi * nMonths);
+        
         // 5. Update UI
         document.getElementById('outBaseLoan').innerText = formatCurrency(totalBaseLoan);
         document.getElementById('outBlendedRate').innerText = `Blended Annual Rate: ${blendedAnnualRate.toFixed(2)}%`;
         document.getElementById('outRevisedPrincipal').innerText = formatCurrency(revisedPrincipal);
         document.getElementById('outEmi').innerText = formatCurrency(emi);
+        document.getElementById('outTotalPocket').innerText = formatCurrency(totalOutOfPocket);
         document.getElementById('outTotalInterest').innerText = formatCurrency(grandTotalInterest);
         
         document.getElementById('scheduleBody').innerHTML = scheduleRows.join('');
@@ -334,6 +342,7 @@
         document.getElementById('outBlendedRate').innerText = 'Blended Rate: 0%';
         document.getElementById('outRevisedPrincipal').innerText = '0';
         document.getElementById('outEmi').innerText = '0';
+        document.getElementById('outTotalPocket').innerText = '0';
         document.getElementById('outTotalInterest').innerText = '0';
         document.getElementById('scheduleBody').innerHTML = '';
     }

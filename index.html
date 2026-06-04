@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Financial Simulator</title>
+    <title>HEC Paris MBA - Master Financial Simulator</title>
     <style>
         :root {
             --primary: #2563eb; --bg-color: #f8fafc; --card-bg: #ffffff;
             --text-main: #1e293b; --border: #e2e8f0;
             --winner-bg: #dcfce7; --winner-text: #166534; --winner-border: #bbf7d0;
+            --scen-a-color: #1d4ed8; --scen-b-color: #6d28d9;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -38,6 +39,11 @@
         .winner-banner { background-color: var(--winner-bg); color: var(--winner-text); border: 2px solid var(--winner-border); padding: 1.2rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 1.1rem; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .breakdown-row { display: flex; justify-content: space-between; font-size: 0.9rem; border-bottom: 1px dashed #cbd5e1; padding: 0.3rem 0; color: #475569; }
         .breakdown-total { display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: bold; padding-top: 0.5rem; color: #0f172a; }
+        
+        .sensitivity-table th { background-color: #1e293b; color: white; padding: 0.5rem; text-align: center; }
+        .sensitivity-table td { text-align: center; padding: 0.6rem; border-bottom: 1px solid #e2e8f0; font-size: 0.95rem; }
+        .winner-a { background-color: #eff6ff; color: var(--scen-a-color); font-weight: bold; }
+        .winner-b { background-color: #f5f3ff; color: var(--scen-b-color); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -140,7 +146,7 @@
             </div>
             <div class="split-grid">
                 <div class="form-group"><label>Unsecured Loan (₹)</label><input type="number" id="unsecAmountB" value="13500000" step="100000"></div>
-                <div class="form-group"><label>Unsecured Rate (%)</label><input type="number" id="unsecRateB" value="11.25" step="0.1"></div>
+                <div class="form-group"><label>Unsecured Rate (%)</label><input type="number" id="unsecRateB" value="10.0" step="0.1"></div>
             </div>
 
             <div class="split-grid" style="border-top: 1px dashed #ddd6fe; padding-top: 1rem; margin-top: 0.5rem;">
@@ -169,12 +175,10 @@
                 <div class="form-group" style="margin-bottom: 0;">
                     <label style="color: #166534;">Monthly Pre-EMI Payment (€)</label>
                     <input type="number" id="eurPreEmi" value="500" step="50" style="border-color: #bbf7d0;">
-                    <small style="color: #166534;">Paid in Euros, benefits from FX spread.</small>
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
                     <label style="color: #166534;">Start Pre-EMI (Month #)</label>
                     <input type="number" id="startPreEmiMonth" value="17" step="1" style="border-color: #bbf7d0;">
-                    <small style="color: #166534;">E.g. Month 17 for internship income.</small>
                 </div>
             </div>
 
@@ -195,6 +199,27 @@
         <h2>Financial Analysis & True Euro NPV</h2>
         
         <div id="winnerBanner" class="winner-banner">Calculating optimal scenario...</div>
+
+        <div style="margin-bottom: 1.5rem; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+            <div style="background-color: #1e293b; color: white; padding: 0.8rem; font-weight: bold; text-align: center;">
+                Market Sensitivity Matrix (The "Assumption Risk" Test)
+            </div>
+            <table class="sensitivity-table">
+                <thead>
+                    <tr>
+                        <th>INR Dep. Rate</th>
+                        <th>Scen. A (NPV)</th>
+                        <th>Scen. B (NPV)</th>
+                        <th>Mathematical Winner</th>
+                    </tr>
+                </thead>
+                <tbody id="sensitivityBody">
+                    </tbody>
+            </table>
+            <div style="padding: 0.5rem; font-size: 0.8rem; color: #64748b; text-align: center; background: #f8fafc;">
+                Tests at what depreciation threshold the FX-Shield outweighs the FD-Decay.
+            </div>
+        </div>
 
         <div class="result-box" style="border-left-color: #3b82f6;">
             <label style="color: #1d4ed8; font-size: 1.1rem;">Scenario A Performance</label>
@@ -266,7 +291,7 @@
 
 <script>
     const formatCurrency = (num) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
-    const formatEur = (num) => new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(num);
+    const formatEur = (num) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(num);
 
     function switchTab(tab) {
         document.getElementById('btnTabA').classList.remove('active'); document.getElementById('btnTabB').classList.remove('active');
@@ -274,154 +299,206 @@
         document.getElementById(`btnTab${tab}`).classList.add('active'); document.getElementById(`tableContainer${tab}`).style.display = 'block';
     }
 
-    function calculate() {
-        // --- 1. TARGET ENGINE ---
+    function calculateTargetInr(depRate) {
         const eurTuition = parseFloat(document.getElementById('eurTuition').value) || 0;
         const eurAccomm = parseFloat(document.getElementById('eurAccomm').value) || 0;
         const eurLiving = parseFloat(document.getElementById('eurLiving').value) || 0;
         const graceMonths = parseInt(document.getElementById('eurMonths').value) || 0; 
         const currentFx = parseFloat(document.getElementById('currentFx').value) || 0;
-        const inrDepRate = parseFloat(document.getElementById('inrDepRate').value) || 0;
         
-        const monthlyFxGrowth = Math.pow(1 + (inrDepRate / 100), 1 / 12) - 1;
-        const totalEurRequired = eurTuition + ((eurAccomm + eurLiving) * graceMonths);
-        
-        let totalTargetInr = eurTuition * currentFx; 
+        const monthlyFxGrowth = Math.pow(1 + (depRate / 100), 1 / 12) - 1;
+        let target = eurTuition * currentFx; 
         const monthlyLivingEur = eurAccomm + eurLiving;
         for (let m = 1; m <= graceMonths; m++) {
             let fxForMonth = currentFx * Math.pow(1 + monthlyFxGrowth, m);
-            totalTargetInr += (monthlyLivingEur * fxForMonth);
+            target += (monthlyLivingEur * fxForMonth);
         }
+        return target;
+    }
 
-        document.getElementById('outMasterTargetInr').innerText = formatCurrency(totalTargetInr);
-        document.getElementById('outMasterTargetEur').innerText = `Total ${formatEur(totalEurRequired)} (Spread over ${graceMonths}m)`;
-
-        // --- 2. SHARED INPUTS ---
+    function runScenarioEngine(secAmt, secRate, unsecAmt, unsecRate, fdLiquidated, fdKept, targetInr, intType, compFreq, overrideDepRate = null) {
+        // Fetch Shared
+        const graceMonths = parseInt(document.getElementById('eurMonths').value) || 0;
         const eurPreEmi = parseFloat(document.getElementById('eurPreEmi').value) || 0;
         const startPreEmiMonth = parseInt(document.getElementById('startPreEmiMonth').value) || 1;
         const tenureMonths = parseInt(document.getElementById('tenureMonths').value) || 0;
-        const totalMonths = graceMonths + tenureMonths;
         const fdRate = parseFloat(document.getElementById('fdRate').value) || 0;
-        
+        const currentFx = parseFloat(document.getElementById('currentFx').value) || 0;
         const eurDiscountRate = parseFloat(document.getElementById('eurDiscountRate').value) || 0;
-        const monthlyDiscount = Math.pow(1 + (eurDiscountRate / 100), 1 / 12) - 1;
         
+        const depRateToUse = overrideDepRate !== null ? overrideDepRate : (parseFloat(document.getElementById('inrDepRate').value) || 0);
+        const monthlyFxGrowth = Math.pow(1 + (depRateToUse / 100), 1 / 12) - 1;
+        const monthlyDiscount = Math.pow(1 + (eurDiscountRate / 100), 1 / 12) - 1;
+        const totalMonths = graceMonths + tenureMonths;
         const finalFx = currentFx * Math.pow(1 + monthlyFxGrowth, totalMonths);
 
-        function runScenario(secAmt, secRate, unsecAmt, unsecRate, fdLiquidated, fdKept, targetInr, intType, compFreq) {
-            const totalLoan = secAmt + unsecAmt;
-            const blendedRate = totalLoan > 0 ? ((secAmt * secRate) + (unsecAmt * unsecRate)) / totalLoan : 0;
+        // Loan Math
+        const totalLoan = secAmt + unsecAmt;
+        const blendedRate = totalLoan > 0 ? ((secAmt * secRate) + (unsecAmt * unsecRate)) / totalLoan : 0;
+        
+        let effectiveMonthlyRate = 0;
+        if (compFreq === 'monthly' || intType === 'simple') effectiveMonthlyRate = blendedRate / 12 / 100;
+        else if (compFreq === 'daily') effectiveMonthlyRate = Math.pow(1 + (blendedRate / 365 / 100), 365 / 12) - 1;
+        else if (compFreq === 'yearly') effectiveMonthlyRate = Math.pow(1 + (blendedRate / 100), 1 / 12) - 1;
+        
+        const standardMonthlyRate = blendedRate / 12 / 100;
+        const gap = (totalLoan + fdLiquidated) - targetInr;
+        
+        let currentPrincipal = totalLoan;
+        let accruedUnpaidInterest = 0; 
+        let totalEmiPaidEur = 0; 
+        let npvEur = fdLiquidated / currentFx; 
+        let scheduleRows = [];
+
+        // Pre-EMI
+        for (let m = 1; m <= graceMonths; m++) {
+            let actualPaymentThisMonthEur = 0; let actualPaymentThisMonthInr = 0;
+            let fxRateNow = currentFx * Math.pow(1 + monthlyFxGrowth, m);
             
-            let effectiveMonthlyRate = 0;
-            if (compFreq === 'monthly' || intType === 'simple') effectiveMonthlyRate = blendedRate / 12 / 100;
-            else if (compFreq === 'daily') effectiveMonthlyRate = Math.pow(1 + (blendedRate / 365 / 100), 365 / 12) - 1;
-            else if (compFreq === 'yearly') effectiveMonthlyRate = Math.pow(1 + (blendedRate / 100), 1 / 12) - 1;
-            
-            const standardMonthlyRate = blendedRate / 12 / 100;
-            const gap = (totalLoan + fdLiquidated) - targetInr;
-            
-            let currentPrincipal = totalLoan;
-            let accruedUnpaidInterest = 0; 
-            let totalEmiPaidEur = 0; 
-            let npvEur = fdLiquidated / currentFx; // Liquidated FD is Day 0 Euro cost
-            let scheduleRows = [];
-
-            // Pre-EMI Phase
-            for (let m = 1; m <= graceMonths; m++) {
-                let actualPaymentThisMonthEur = 0; let actualPaymentThisMonthInr = 0;
-                let fxRateNow = currentFx * Math.pow(1 + monthlyFxGrowth, m);
-                
-                if (m >= startPreEmiMonth && eurPreEmi > 0) {
-                    actualPaymentThisMonthEur = eurPreEmi;
-                    actualPaymentThisMonthInr = eurPreEmi * fxRateNow;
-                }
-
-                let interestForMonth = 0;
-                if (intType === 'compound') {
-                    interestForMonth = currentPrincipal * effectiveMonthlyRate;
-                    let interestCovered = Math.min(interestForMonth, actualPaymentThisMonthInr);
-                    let surplus = actualPaymentThisMonthInr - interestCovered;
-                    
-                    if (surplus > currentPrincipal) {
-                        surplus = currentPrincipal;
-                        actualPaymentThisMonthInr = interestCovered + surplus;
-                        actualPaymentThisMonthEur = actualPaymentThisMonthInr / fxRateNow; 
-                    }
-                    currentPrincipal += (interestForMonth - actualPaymentThisMonthInr);
-                } else {
-                    interestForMonth = currentPrincipal * standardMonthlyRate;
-                    let unpaidForMonth = interestForMonth - actualPaymentThisMonthInr;
-                    
-                    if (unpaidForMonth >= 0) { accruedUnpaidInterest += unpaidForMonth; } 
-                    else {
-                        let excess = Math.abs(unpaidForMonth);
-                        if (accruedUnpaidInterest > 0) {
-                            let toReduce = Math.min(excess, accruedUnpaidInterest);
-                            accruedUnpaidInterest -= toReduce; excess -= toReduce;
-                        }
-                        let principalPaid = Math.min(excess, currentPrincipal);
-                        currentPrincipal -= principalPaid;
-                        
-                        if (principalPaid < excess) {
-                            actualPaymentThisMonthInr = interestForMonth + (Math.abs(unpaidForMonth) - excess) + principalPaid;
-                            actualPaymentThisMonthEur = actualPaymentThisMonthInr / fxRateNow;
-                        }
-                    }
-                }
-
-                totalEmiPaidEur += actualPaymentThisMonthEur;
-                npvEur += actualPaymentThisMonthEur / Math.pow(1 + monthlyDiscount, m);
-
-                let runningBalance = intType === 'compound' ? currentPrincipal : (currentPrincipal + accruedUnpaidInterest);
-                scheduleRows.push(`<tr><td>${m}</td><td class="phase-pre">Pre-EMI</td><td>${formatCurrency(actualPaymentThisMonthInr)}</td><td style="color:#64748b;">${formatEur(actualPaymentThisMonthEur)}</td><td>${formatCurrency(interestForMonth)}</td><td>${formatCurrency(runningBalance)}</td></tr>`);
+            if (m >= startPreEmiMonth && eurPreEmi > 0) {
+                actualPaymentThisMonthEur = eurPreEmi;
+                actualPaymentThisMonthInr = eurPreEmi * fxRateNow;
             }
 
-            let revisedPrincipal = intType === 'compound' ? currentPrincipal : (currentPrincipal + accruedUnpaidInterest);
-            let emi = 0; let emiBalance = revisedPrincipal;
-
-            // EMI Phase
-            if (tenureMonths > 0 && standardMonthlyRate > 0 && revisedPrincipal > 0) {
-                emi = revisedPrincipal * standardMonthlyRate * Math.pow(1 + standardMonthlyRate, tenureMonths) / (Math.pow(1 + standardMonthlyRate, tenureMonths) - 1);
-                
-                for(let m = 1; m <= tenureMonths; m++) {
-                    if (emiBalance <= 0) break;
-                    let intPortion = emiBalance * standardMonthlyRate;
-                    let prinPortion = emi - intPortion;
-                    
-                    let actualEmiThisMonth = emi;
-                    if (emiBalance < prinPortion) {
-                        prinPortion = emiBalance; actualEmiThisMonth = prinPortion + intPortion;
+            let interestForMonth = 0;
+            if (intType === 'compound') {
+                interestForMonth = currentPrincipal * effectiveMonthlyRate;
+                let interestCovered = Math.min(interestForMonth, actualPaymentThisMonthInr);
+                let surplus = actualPaymentThisMonthInr - interestCovered;
+                if (surplus > currentPrincipal) {
+                    surplus = currentPrincipal;
+                    actualPaymentThisMonthInr = interestCovered + surplus;
+                    actualPaymentThisMonthEur = actualPaymentThisMonthInr / fxRateNow; 
+                }
+                currentPrincipal += (interestForMonth - actualPaymentThisMonthInr);
+            } else {
+                interestForMonth = currentPrincipal * standardMonthlyRate;
+                let unpaidForMonth = interestForMonth - actualPaymentThisMonthInr;
+                if (unpaidForMonth >= 0) { accruedUnpaidInterest += unpaidForMonth; } 
+                else {
+                    let excess = Math.abs(unpaidForMonth);
+                    if (accruedUnpaidInterest > 0) {
+                        let toReduce = Math.min(excess, accruedUnpaidInterest);
+                        accruedUnpaidInterest -= toReduce; excess -= toReduce;
                     }
-                    emiBalance -= prinPortion;
-                    
-                    let fxRateNow = currentFx * Math.pow(1 + monthlyFxGrowth, graceMonths + m);
-                    let eurCostNow = actualEmiThisMonth / fxRateNow;
-                    totalEmiPaidEur += eurCostNow;
-                    npvEur += eurCostNow / Math.pow(1 + monthlyDiscount, graceMonths + m);
-
-                    scheduleRows.push(`<tr><td>${graceMonths + m}</td><td class="phase-emi">Repayment</td><td>${formatCurrency(actualEmiThisMonth)}</td><td style="color:#0284c7;font-weight:bold;">${formatEur(eurCostNow)}</td><td>${formatCurrency(intPortion)}</td><td>${formatCurrency(emiBalance)}</td></tr>`);
+                    let principalPaid = Math.min(excess, currentPrincipal);
+                    currentPrincipal -= principalPaid;
+                    if (principalPaid < excess) {
+                        actualPaymentThisMonthInr = interestForMonth + (Math.abs(unpaidForMonth) - excess) + principalPaid;
+                        actualPaymentThisMonthEur = actualPaymentThisMonthInr / fxRateNow;
+                    }
                 }
             }
 
-            // Asset Math
-            let totalFd = fdKept + fdLiquidated;
-            let initialFdEur = totalFd / currentFx;
-            let fdMaturityVal = fdKept * Math.pow(1 + (fdRate / 100), totalMonths / 12);
-            let finalFdEur = fdMaturityVal / finalFx;
-            
-            let trueNetEuroCost = totalEmiPaidEur + initialFdEur - finalFdEur;
-            
-            // NPV adjustment for Matured FD (Subtracting a future asset)
-            npvEur -= finalFdEur / Math.pow(1 + monthlyDiscount, totalMonths);
+            totalEmiPaidEur += actualPaymentThisMonthEur;
+            npvEur += actualPaymentThisMonthEur / Math.pow(1 + monthlyDiscount, m);
 
-            return { blendedRate, gap, emi, scheduleRowsHtml: scheduleRows.join(''), totalEmiPaidEur, initialFdEur, finalFdEur, trueNetEuroCost, npvEur };
+            let runningBalance = intType === 'compound' ? currentPrincipal : (currentPrincipal + accruedUnpaidInterest);
+            scheduleRows.push(`<tr><td>${m}</td><td class="phase-pre">Pre-EMI</td><td>${formatCurrency(actualPaymentThisMonthInr)}</td><td style="color:#64748b;">${formatEur(actualPaymentThisMonthEur)}</td><td>${formatCurrency(interestForMonth)}</td><td>${formatCurrency(runningBalance)}</td></tr>`);
         }
 
-        // --- 3. RUN SCENARIOS ---
-        const runA = runScenario(parseFloat(document.getElementById('secAmountA').value)||0, parseFloat(document.getElementById('secRateA').value)||0, parseFloat(document.getElementById('unsecAmountA').value)||0, parseFloat(document.getElementById('unsecRateA').value)||0, parseFloat(document.getElementById('fdLiquidatedA').value)||0, parseFloat(document.getElementById('fdKeptA').value)||0, totalTargetInr, document.getElementById('interestTypeA').value, document.getElementById('compoundFreqA').value);
-        const runB = runScenario(parseFloat(document.getElementById('secAmountB').value)||0, parseFloat(document.getElementById('secRateB').value)||0, parseFloat(document.getElementById('unsecAmountB').value)||0, parseFloat(document.getElementById('unsecRateB').value)||0, parseFloat(document.getElementById('fdLiquidatedB').value)||0, parseFloat(document.getElementById('fdKeptB').value)||0, totalTargetInr, document.getElementById('interestTypeB').value, document.getElementById('compoundFreqB').value);
+        let revisedPrincipal = intType === 'compound' ? currentPrincipal : (currentPrincipal + accruedUnpaidInterest);
+        let emi = 0; let emiBalance = revisedPrincipal;
 
-        // --- 4. UPDATE UI ---
+        // EMI Phase
+        if (tenureMonths > 0 && standardMonthlyRate > 0 && revisedPrincipal > 0) {
+            emi = revisedPrincipal * standardMonthlyRate * Math.pow(1 + standardMonthlyRate, tenureMonths) / (Math.pow(1 + standardMonthlyRate, tenureMonths) - 1);
+            for(let m = 1; m <= tenureMonths; m++) {
+                if (emiBalance <= 0) break;
+                let intPortion = emiBalance * standardMonthlyRate;
+                let prinPortion = emi - intPortion;
+                
+                let actualEmiThisMonth = emi;
+                if (emiBalance < prinPortion) {
+                    prinPortion = emiBalance; actualEmiThisMonth = prinPortion + intPortion;
+                }
+                emiBalance -= prinPortion;
+                
+                let fxRateNow = currentFx * Math.pow(1 + monthlyFxGrowth, graceMonths + m);
+                let eurCostNow = actualEmiThisMonth / fxRateNow;
+                totalEmiPaidEur += eurCostNow;
+                npvEur += eurCostNow / Math.pow(1 + monthlyDiscount, graceMonths + m);
+
+                scheduleRows.push(`<tr><td>${graceMonths + m}</td><td class="phase-emi">Repayment</td><td>${formatCurrency(actualEmiThisMonth)}</td><td style="color:#0284c7;font-weight:bold;">${formatEur(eurCostNow)}</td><td>${formatCurrency(intPortion)}</td><td>${formatCurrency(emiBalance)}</td></tr>`);
+            }
+        }
+
+        // Asset Math
+        let totalFd = fdKept + fdLiquidated;
+        let initialFdEur = totalFd / currentFx;
+        let fdMaturityVal = fdKept * Math.pow(1 + (fdRate / 100), totalMonths / 12);
+        let finalFdEur = fdMaturityVal / finalFx;
+        
+        let trueNetEuroCost = totalEmiPaidEur + initialFdEur - finalFdEur;
+        npvEur -= finalFdEur / Math.pow(1 + monthlyDiscount, totalMonths);
+
+        return { blendedRate, gap, emi, scheduleRowsHtml: scheduleRows.join(''), totalEmiPaidEur, initialFdEur, finalFdEur, trueNetEuroCost, npvEur };
+    }
+
+    function calculate() {
+        // Get primary depreciation rate
+        const primaryDepRate = parseFloat(document.getElementById('inrDepRate').value) || 0;
+        const mainTargetInr = calculateTargetInr(primaryDepRate);
+
+        // --- UPDATE MASTER ENGINE UI ---
+        const eurTuition = parseFloat(document.getElementById('eurTuition').value) || 0;
+        const eurAccomm = parseFloat(document.getElementById('eurAccomm').value) || 0;
+        const eurLiving = parseFloat(document.getElementById('eurLiving').value) || 0;
+        const graceMonths = parseInt(document.getElementById('eurMonths').value) || 0;
+        const totalEurRequired = eurTuition + ((eurAccomm + eurLiving) * graceMonths);
+
+        document.getElementById('outMasterTargetInr').innerText = formatCurrency(mainTargetInr);
+        document.getElementById('outMasterTargetEur').innerText = `Total ${formatEur(totalEurRequired)} (Spread over ${graceMonths}m)`;
+
+        // Fetch inputs for Scenario A & B
+        const secAmtA = parseFloat(document.getElementById('secAmountA').value)||0; const secRateA = parseFloat(document.getElementById('secRateA').value)||0;
+        const unsecAmtA = parseFloat(document.getElementById('unsecAmountA').value)||0; const unsecRateA = parseFloat(document.getElementById('unsecRateA').value)||0;
+        const fdLiqA = parseFloat(document.getElementById('fdLiquidatedA').value)||0; const fdKeptA = parseFloat(document.getElementById('fdKeptA').value)||0;
+        const typeA = document.getElementById('interestTypeA').value; const freqA = document.getElementById('compoundFreqA').value;
+
+        const secAmtB = parseFloat(document.getElementById('secAmountB').value)||0; const secRateB = parseFloat(document.getElementById('secRateB').value)||0;
+        const unsecAmtB = parseFloat(document.getElementById('unsecAmountB').value)||0; const unsecRateB = parseFloat(document.getElementById('unsecRateB').value)||0;
+        const fdLiqB = parseFloat(document.getElementById('fdLiquidatedB').value)||0; const fdKeptB = parseFloat(document.getElementById('fdKeptB').value)||0;
+        const typeB = document.getElementById('interestTypeB').value; const freqB = document.getElementById('compoundFreqB').value;
+
+        // --- RUN PRIMARY SCENARIOS ---
+        const runA = runScenarioEngine(secAmtA, secRateA, unsecAmtA, unsecRateA, fdLiqA, fdKeptA, mainTargetInr, typeA, freqA, primaryDepRate);
+        const runB = runScenarioEngine(secAmtB, secRateB, unsecAmtB, unsecRateB, fdLiqB, fdKeptB, mainTargetInr, typeB, freqB, primaryDepRate);
+
+        // --- RUN SENSITIVITY STRESS TEST MATRIX ---
+        const sensitivityRates = [3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0];
+        let sensitivityHtml = '';
+        
+        for (let r of sensitivityRates) {
+            let tTarget = calculateTargetInr(r);
+            let sA = runScenarioEngine(secAmtA, secRateA, unsecAmtA, unsecRateA, fdLiqA, fdKeptA, tTarget, typeA, freqA, r);
+            let sB = runScenarioEngine(secAmtB, secRateB, unsecAmtB, unsecRateB, fdLiqB, fdKeptB, tTarget, typeB, freqB, r);
+            
+            let winner = ''; let winClass = ''; let diffText = '';
+            if (sA.npvEur < sB.npvEur) {
+                winner = 'Scenario A'; winClass = 'winner-a';
+                diffText = `(Wins by ${formatEur(sB.npvEur - sA.npvEur)})`;
+            } else {
+                winner = 'Scenario B'; winClass = 'winner-b';
+                diffText = `(Wins by ${formatEur(sA.npvEur - sB.npvEur)})`;
+            }
+
+            // Bold the row that matches the user's current input
+            let isCurrent = r === primaryDepRate ? 'font-weight: 900; background-color: #fef08a;' : '';
+
+            sensitivityHtml += `
+                <tr style="${isCurrent}">
+                    <td>${r.toFixed(1)}%</td>
+                    <td>${formatEur(sA.npvEur)}</td>
+                    <td>${formatEur(sB.npvEur)}</td>
+                    <td class="${winClass}">${winner} <span style="font-size:0.8rem; font-weight:normal;">${diffText}</span></td>
+                </tr>
+            `;
+        }
+        document.getElementById('sensitivityBody').innerHTML = sensitivityHtml;
+
+
+        // --- UPDATE PRIMARY UI ---
         const updateGap = (id, gapVal) => {
             const el = document.getElementById(id);
             if (gapVal >= -1000 && gapVal <= 1000) { el.innerText = "Target Fully Funded ✓"; el.style.backgroundColor = "#dcfce7"; el.style.color = "#166534"; } 
@@ -449,7 +526,7 @@
         document.getElementById('outNpvB').innerText = formatEur(runB.npvEur);
         document.getElementById('scheduleBodyB').innerHTML = runB.scheduleRowsHtml;
 
-        // --- 5. AUTOMATED WINNER LOGIC ---
+        // --- AUTOMATED WINNER LOGIC ---
         const banner = document.getElementById('winnerBanner');
         const diffNpv = Math.abs(runA.npvEur - runB.npvEur);
         

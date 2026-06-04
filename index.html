@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Loan Amortization Simulator</title>
+    <title>Shrinath Bhat's Amortization Simulator</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -68,6 +68,9 @@
         .tab-btn { background: none; border: none; font-size: 1.1rem; font-weight: bold; color: #64748b; cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; }
         .tab-btn.active { background: var(--bg-color); color: var(--primary); }
         .winner-banner { background-color: var(--winner-bg); color: var(--winner-text); border: 2px solid var(--winner-border); padding: 1.2rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 1.1rem; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        
+        .breakdown-row { display: flex; justify-content: space-between; font-size: 0.9rem; border-bottom: 1px dashed #cbd5e1; padding: 0.3rem 0; color: #475569; }
+        .breakdown-total { display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: bold; padding-top: 0.5rem; color: #0f172a; }
     </style>
 </head>
 <body>
@@ -123,7 +126,7 @@
             <div class="split-grid">
                 <div class="form-group">
                     <label>Secured Loan (₹)</label>
-                    <input type="number" id="secAmountA" value="10000000" step="100000">
+                    <input type="number" id="secAmountA" value="13500000" step="100000">
                 </div>
                 <div class="form-group">
                     <label>Secured Rate (%)</label>
@@ -133,7 +136,7 @@
             <div class="split-grid">
                 <div class="form-group">
                     <label>Unsecured Loan (₹)</label>
-                    <input type="number" id="unsecAmountA" value="1800000" step="100000">
+                    <input type="number" id="unsecAmountA" value="0" step="100000">
                 </div>
                 <div class="form-group">
                     <label>Unsecured Rate (%)</label>
@@ -190,11 +193,11 @@
             <div class="split-grid">
                 <div class="form-group">
                     <label>Unsecured Loan (₹)</label>
-                    <input type="number" id="unsecAmountB" value="8800000" step="100000">
+                    <input type="number" id="unsecAmountB" value="12000000" step="100000">
                 </div>
                 <div class="form-group">
                     <label>Unsecured Rate (%)</label>
-                    <input type="number" id="unsecRateB" value="12.5" step="0.1">
+                    <input type="number" id="unsecRateB" value="11.5" step="0.1">
                 </div>
             </div>
 
@@ -265,19 +268,14 @@
             <div style="font-size: 1rem; margin-top: 0.8rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                 <div>Blended Base Rate:</div> <strong id="outBlendedRateA">0%</strong>
                 <div>Final Regular EMI (INR):</div> <strong id="outEmiA" style="color:#10b981;">0</strong>
-                
-                <div style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem;">Loan Out-of-Pocket:</div> 
-                <strong id="outPocketA" style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem;">0</strong>
-                
-                <div>FD Liquidated (Sunk):</div> <strong id="outFdSunkA" style="color:#f43f5e;">-0</strong>
-                <div>Interest Earned (FD):</div> <strong id="outFdGainsA" style="color:#10b981;">+0</strong>
             </div>
-            <div style="background: #eff6ff; padding: 0.8rem; border-radius: 6px; margin-top: 1rem;">
-                Net Wealth Lost (Nominal INR): <strong id="outNetWealthA" style="color:#f43f5e;">0</strong><br>
-                <div style="margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid #bfdbfe;">
-                    <span style="font-size: 0.9rem; font-weight: 600; color: #1d4ed8;">True Cost in Euros (FX Adjusted): <strong id="outFxCostA" style="font-size: 1.1rem;">€0</strong></span><br>
-                    <small style="color: #475569;">Includes the dynamically converting Euro Pre-EMI payments.</small>
-                </div>
+            
+            <div style="background: #eff6ff; padding: 1rem; border-radius: 6px; margin-top: 1rem;">
+                <div style="font-weight: 600; color: #1d4ed8; margin-bottom: 0.5rem;">True Net Cost in Euros (FX Adjusted)</div>
+                <div class="breakdown-row"><span>Total EMIs Paid to Bank:</span> <span id="outFxEmiA">€0</span></div>
+                <div class="breakdown-row"><span>Starting Value of Total FD:</span> <span id="outFxStartFdA">€0</span></div>
+                <div class="breakdown-row" style="color: #10b981;"><span>(-) Final Matured FD Value:</span> <span id="outFxEndFdA">-€0</span></div>
+                <div class="breakdown-total"><span style="color: #1d4ed8;">True Euro Wealth Drained:</span> <span id="outFxCostA" style="color: #1d4ed8;">€0</span></div>
             </div>
         </div>
 
@@ -286,19 +284,14 @@
             <div style="font-size: 1rem; margin-top: 0.8rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                 <div>Blended Base Rate:</div> <strong id="outBlendedRateB">0%</strong>
                 <div>Final Regular EMI (INR):</div> <strong id="outEmiB" style="color:#10b981;">0</strong>
-                
-                <div style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem;">Loan Out-of-Pocket:</div> 
-                <strong id="outPocketB" style="margin-top: 0.5rem; border-top: 1px dashed #cbd5e1; padding-top: 0.5rem;">0</strong>
-                
-                <div>FD Liquidated (Sunk):</div> <strong id="outFdSunkB" style="color:#f43f5e;">-0</strong>
-                <div>Interest Earned (FD):</div> <strong id="outFdGainsB" style="color:#10b981;">+0</strong>
             </div>
-            <div style="background: #f5f3ff; padding: 0.8rem; border-radius: 6px; margin-top: 1rem;">
-                Net Wealth Lost (Nominal INR): <strong id="outNetWealthB" style="color:#f43f5e;">0</strong><br>
-                <div style="margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid #ddd6fe;">
-                    <span style="font-size: 0.9rem; font-weight: 600; color: #6d28d9;">True Cost in Euros (FX Adjusted): <strong id="outFxCostB" style="font-size: 1.1rem;">€0</strong></span><br>
-                    <small style="color: #475569;">Includes the dynamically converting Euro Pre-EMI payments.</small>
-                </div>
+
+            <div style="background: #f5f3ff; padding: 1rem; border-radius: 6px; margin-top: 1rem;">
+                <div style="font-weight: 600; color: #6d28d9; margin-bottom: 0.5rem;">True Net Cost in Euros (FX Adjusted)</div>
+                <div class="breakdown-row"><span>Total EMIs Paid to Bank:</span> <span id="outFxEmiB">€0</span></div>
+                <div class="breakdown-row"><span>Starting Value of Total FD:</span> <span id="outFxStartFdB">€0</span></div>
+                <div class="breakdown-row" style="color: #10b981;"><span>(-) Final Matured FD Value:</span> <span id="outFxEndFdB">-€0</span></div>
+                <div class="breakdown-total"><span style="color: #6d28d9;">True Euro Wealth Drained:</span> <span id="outFxCostB" style="color: #6d28d9;">€0</span></div>
             </div>
         </div>
     </div>
@@ -358,7 +351,7 @@
     }
 
     function calculate() {
-        // --- 1. THE HEC PARIS MASTER TARGET ENGINE ---
+        // --- 1. THE TARGET ENGINE ---
         const eurTuition = parseFloat(document.getElementById('eurTuition').value) || 0;
         const eurAccomm = parseFloat(document.getElementById('eurAccomm').value) || 0;
         const eurLiving = parseFloat(document.getElementById('eurLiving').value) || 0;
@@ -385,6 +378,8 @@
         const tenureMonths = parseInt(document.getElementById('tenureMonths').value) || 0;
         const totalMonths = graceMonths + tenureMonths;
         const fdRate = parseFloat(document.getElementById('fdRate').value) || 0;
+        
+        const finalFx = currentFx * Math.pow(1 + monthlyFxGrowth, totalMonths);
 
         // Amortization Helper Function
         function runScenario(secAmt, secRate, unsecAmt, unsecRate, fdLiquidated, fdKept, targetInr, intType, compFreq) {
@@ -401,7 +396,7 @@
                 effectiveMonthlyRate = Math.pow(1 + (blendedRate / 100), 1 / 12) - 1;
             }
             
-            const standardMonthlyRate = blendedRate / 12 / 100; // For Simple Int formulas & regular EMI
+            const standardMonthlyRate = blendedRate / 12 / 100;
             
             // Gap Calculation
             const providedCapital = totalLoan + fdLiquidated;
@@ -410,13 +405,11 @@
             // Engine Math
             let currentPrincipal = totalLoan;
             let accruedUnpaidInterest = 0; 
-            let totalOutPocketInr = 0;
-            let totalOutPocketEur = 0; 
+            let totalEmiPaidEur = 0; 
             let scheduleRows = [];
 
             // Pre-EMI Phase
             for (let m = 1; m <= graceMonths; m++) {
-                // Calculate actual INR paid this month based on FX spread and Start Month
                 let actualPaymentThisMonthEur = 0;
                 let actualPaymentThisMonthInr = 0;
                 
@@ -436,7 +429,7 @@
                     if (surplus > currentPrincipal) {
                         surplus = currentPrincipal;
                         actualPaymentThisMonthInr = interestCovered + surplus;
-                        actualPaymentThisMonthEur = actualPaymentThisMonthInr / (currentFx * Math.pow(1 + monthlyFxGrowth, m)); // adjust eur if loan paid off
+                        actualPaymentThisMonthEur = actualPaymentThisMonthInr / (currentFx * Math.pow(1 + monthlyFxGrowth, m)); 
                     }
 
                     currentPrincipal += (interestForMonth - actualPaymentThisMonthInr);
@@ -458,7 +451,6 @@
                         let principalPaid = Math.min(excess, currentPrincipal);
                         currentPrincipal -= principalPaid;
                         
-                        // Recalculate true actuals if we overpaid the whole loan
                         if (principalPaid < excess) {
                             actualPaymentThisMonthInr = interestForMonth + (Math.abs(unpaidForMonth) - excess) + principalPaid;
                             actualPaymentThisMonthEur = actualPaymentThisMonthInr / (currentFx * Math.pow(1 + monthlyFxGrowth, m));
@@ -466,9 +458,7 @@
                     }
                 }
 
-                totalOutPocketInr += actualPaymentThisMonthInr;
-                totalOutPocketEur += actualPaymentThisMonthEur;
-
+                totalEmiPaidEur += actualPaymentThisMonthEur;
                 let runningBalance = intType === 'compound' ? currentPrincipal : (currentPrincipal + accruedUnpaidInterest);
 
                 scheduleRows.push(`
@@ -503,11 +493,10 @@
                     }
 
                     emiBalance -= prinPortion;
-                    totalOutPocketInr += actualEmiThisMonth;
                     
                     let fxRateNow = currentFx * Math.pow(1 + monthlyFxGrowth, graceMonths + m);
                     let eurCostNow = actualEmiThisMonth / fxRateNow;
-                    totalOutPocketEur += eurCostNow;
+                    totalEmiPaidEur += eurCostNow;
 
                     scheduleRows.push(`
                         <tr>
@@ -522,14 +511,17 @@
                 }
             }
 
-            // Market Reality
-            const fdMaturityVal = fdKept * Math.pow(1 + (fdRate / 100), totalMonths / 12);
-            const fdGains = fdMaturityVal - fdKept;
-            const netWealthLost = totalOutPocketInr + fdLiquidated - fdGains;
+            // --- TRUE EURO COST MATH ---
+            let totalFd = fdKept + fdLiquidated;
+            let initialFdEur = totalFd / currentFx;
+            
+            let fdMaturityVal = fdKept * Math.pow(1 + (fdRate / 100), totalMonths / 12);
+            let finalFdEur = fdMaturityVal / finalFx;
+            
+            // Equation: Money paid to bank + Value of asset at start - Value of asset remaining at end
+            let trueNetEuroCost = totalEmiPaidEur + initialFdEur - finalFdEur;
 
-            totalOutPocketEur += (fdLiquidated / currentFx);
-
-            return { totalLoan, blendedRate, gap, revisedPrincipal, emi, totalOutPocketInr, totalOutPocketEur, fdGains, netWealthLost, scheduleRowsHtml: scheduleRows.join('') };
+            return { totalLoan, blendedRate, gap, revisedPrincipal, emi, scheduleRowsHtml: scheduleRows.join(''), totalEmiPaidEur, initialFdEur, finalFdEur, trueNetEuroCost };
         }
 
         // --- 3. RUN SCENARIOS ---
@@ -570,33 +562,36 @@
         };
 
         updateGap('gapA', runA.gap);
-        document.getElementById('outBlendedRateA').innerText = `${runA.blendedRate.toFixed(0)}%`;
+        document.getElementById('outBlendedRateA').innerText = `${runA.blendedRate.toFixed(1)}%`;
         document.getElementById('outEmiA').innerText = formatCurrency(runA.emi);
-        document.getElementById('outPocketA').innerText = formatCurrency(runA.totalOutPocketInr);
-        document.getElementById('outFdSunkA').innerText = `-${formatCurrency(parseFloat(document.getElementById('fdLiquidatedA').value)||0)}`;
-        document.getElementById('outFdGainsA').innerText = `+${formatCurrency(runA.fdGains)}`;
-        document.getElementById('outNetWealthA').innerText = formatCurrency(runA.netWealthLost);
-        document.getElementById('outFxCostA').innerText = formatEur(runA.totalOutPocketEur);
+        
+        document.getElementById('outFxEmiA').innerText = formatEur(runA.totalEmiPaidEur);
+        document.getElementById('outFxStartFdA').innerText = formatEur(runA.initialFdEur);
+        document.getElementById('outFxEndFdA').innerText = `-${formatEur(runA.finalFdEur)}`;
+        document.getElementById('outFxCostA').innerText = formatEur(runA.trueNetEuroCost);
+        
         document.getElementById('scheduleBodyA').innerHTML = runA.scheduleRowsHtml;
 
         updateGap('gapB', runB.gap);
-        document.getElementById('outBlendedRateB').innerText = `${runB.blendedRate.toFixed(0)}%`;
+        document.getElementById('outBlendedRateB').innerText = `${runB.blendedRate.toFixed(1)}%`;
         document.getElementById('outEmiB').innerText = formatCurrency(runB.emi);
-        document.getElementById('outPocketB').innerText = formatCurrency(runB.totalOutPocketInr);
-        document.getElementById('outFdSunkB').innerText = `-${formatCurrency(parseFloat(document.getElementById('fdLiquidatedB').value)||0)}`;
-        document.getElementById('outFdGainsB').innerText = `+${formatCurrency(runB.fdGains)}`;
-        document.getElementById('outNetWealthB').innerText = formatCurrency(runB.netWealthLost);
-        document.getElementById('outFxCostB').innerText = formatEur(runB.totalOutPocketEur);
+        
+        document.getElementById('outFxEmiB').innerText = formatEur(runB.totalEmiPaidEur);
+        document.getElementById('outFxStartFdB').innerText = formatEur(runB.initialFdEur);
+        document.getElementById('outFxEndFdB').innerText = `-${formatEur(runB.finalFdEur)}`;
+        document.getElementById('outFxCostB').innerText = formatEur(runB.trueNetEuroCost);
+        
         document.getElementById('scheduleBodyB').innerHTML = runB.scheduleRowsHtml;
 
-        // --- 5. AUTOMATED WINNER LOGIC ---
+        // --- 5. AUTOMATED WINNER LOGIC (BASED ON EURO COST) ---
         const banner = document.getElementById('winnerBanner');
-        const diffEur = Math.abs(runA.totalOutPocketEur - runB.totalOutPocketEur);
-        if (runA.totalOutPocketEur < runB.totalOutPocketEur) {
-            banner.innerHTML = `🏆 <strong>Scenario A wins.</strong> By leveraging the loan and earning in Euros, you save an effective <strong>${formatEur(diffEur)}</strong> over the loan's lifetime compared to liquidating upfront.`;
+        const diffEur = Math.abs(runA.trueNetEuroCost - runB.trueNetEuroCost);
+        
+        if (runA.trueNetEuroCost < runB.trueNetEuroCost) {
+            banner.innerHTML = `🏆 <strong>Scenario A wins mathematically.</strong> The FX shield on the larger debt outweighs the Euro-decay of the FD, preserving <strong>${formatEur(diffEur)}</strong> over the lifetime.`;
             banner.style.backgroundColor = "#dcfce7"; banner.style.color = "#166534"; banner.style.borderColor = "#bbf7d0";
         } else {
-            banner.innerHTML = `🏆 <strong>Scenario B wins.</strong> Liquidating the FD minimizes the expensive uncollateralized debt, saving you an effective <strong>${formatEur(diffEur)}</strong> over the timeline.`;
+            banner.innerHTML = `🏆 <strong>Scenario B wins mathematically.</strong> The Euro-decay of holding the INR FD is too punishing. Liquidating upfront preserves <strong>${formatEur(diffEur)}</strong> over the lifetime.`;
             banner.style.backgroundColor = "#f3e8ff"; banner.style.color = "#581c87"; banner.style.borderColor = "#e9d5ff";
         }
     }

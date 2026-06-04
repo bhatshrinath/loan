@@ -37,6 +37,7 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         h2 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
+        h3 { margin-top: 0; color: var(--text-main); padding-bottom: 0.5rem; font-size: 1.1rem; }
         .form-group { margin-bottom: 1.2rem; }
         label { display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.9rem; }
         input, select {
@@ -53,7 +54,7 @@
         /* Table Styles */
         .table-container { overflow-x: auto; margin-top: 1rem; max-height: 500px; overflow-y: auto;}
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
-        th { background-color: var(--bg-color); padding: 1rem; font-weight: 600; position: sticky; top: 0; }
+        th { background-color: var(--bg-color); padding: 1rem; font-weight: 600; position: sticky; top: 0; z-index: 10; }
         td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
         tr:hover { background-color: #f1f5f9; }
         .phase-pre { color: #f59e0b; font-weight: 600; }
@@ -68,7 +69,7 @@
         
         <div class="split-grid">
             <div class="form-group">
-                <label>Secured Loan Amount</label>
+                <label>Secured Loan Amount (₹)</label>
                 <input type="number" id="secAmount" value="15000000" step="100000">
             </div>
             <div class="form-group">
@@ -79,7 +80,7 @@
 
         <div class="split-grid">
             <div class="form-group">
-                <label>Unsecured Loan Amount</label>
+                <label>Unsecured Loan Amount (₹)</label>
                 <input type="number" id="unsecAmount" value="0" step="100000">
             </div>
             <div class="form-group">
@@ -93,11 +94,11 @@
         <div class="split-grid">
             <div class="form-group">
                 <label>Wait Time / Pre-EMI (Months)</label>
-                <input type="number" id="gracePeriod" value="28" step="1">
+                <input type="number" id="gracePeriod" value="12" step="1">
             </div>
             <div class="form-group">
-                <label>Monthly Pre-EMI Payment</label>
-                <input type="number" id="preEmiPayment" value="0" step="1000">
+                <label>Monthly Pre-EMI Payment (₹)</label>
+                <input type="number" id="preEmiPayment" value="15000" step="1000">
             </div>
         </div>
 
@@ -121,7 +122,25 @@
 
         <div class="form-group">
             <label>Final Repayment Tenure (Months)</label>
-            <input type="number" id="tenureMonths" value="152" step="1">
+            <input type="number" id="tenureMonths" value="180" step="1">
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">
+        
+        <h3>Market Reality Factors</h3>
+        <div class="split-grid">
+            <div class="form-group">
+                <label>Current FD Savings (₹)</label>
+                <input type="number" id="fdAmount" value="5000000" step="100000">
+            </div>
+            <div class="form-group">
+                <label>FD Interest Rate (%)</label>
+                <input type="number" id="fdRate" value="6.0" step="0.1">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Expected Inflation Rate (%)</label>
+            <input type="number" id="inflationRate" value="8.0" step="0.1">
         </div>
     </div>
 
@@ -150,15 +169,37 @@
             <label>Total Interest Payable (Over Life of Loan)</label>
             <div class="result-value" style="color: #f43f5e;" id="outTotalInterest">0</div>
         </div>
+
         <div class="result-box" style="border-left-color: #8b5cf6;">
             <label>Total Out-of-Pocket Payment</label>
             <div class="result-value" style="color: #8b5cf6;" id="outTotalPocket">0</div>
-            <small>Actual cash paid (Pre-EMI phases + all regular EMIs).</small>
+            <small>Actual nominal cash paid (Pre-EMIs + EMIs).</small>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1.5rem 0;">
+        <h3>Scenario Comparison (Market Reality)</h3>
+        
+        <div class="result-box" style="border-left-color: #3b82f6;">
+            <label>Scenario A: Keep FD & Borrow Full Amount</label>
+            <div style="font-size: 1.1rem; margin-top: 0.5rem;">
+                FD Maturity Value: <strong id="outFdMaturity" style="color:#10b981;">0</strong><br>
+                Net Wealth Lost (Out-of-Pocket minus FD Gains): <strong id="outNetWealthA" style="color:#f43f5e;">0</strong><br>
+                <span style="font-size: 0.85rem; color: #64748b;">Present Value (Adjusted for Inflation): <strong id="outPvA">0</strong></span>
+            </div>
+        </div>
+
+        <div class="result-box" style="border-left-color: #8b5cf6;">
+            <label>Scenario B: Liquidate FD & Borrow Less</label>
+            <div style="font-size: 1.1rem; margin-top: 0.5rem;">
+                New Reduced EMI: <strong id="outReducedEmi" style="color:#10b981;">0</strong><br>
+                Net Wealth Lost (Reduced Out-of-Pocket + FD Sunk Cost): <strong id="outNetWealthB" style="color:#f43f5e;">0</strong><br>
+                <span style="font-size: 0.85rem; color: #64748b;">Present Value (Adjusted for Inflation): <strong id="outPvB">0</strong></span>
+            </div>
         </div>
     </div>
 
     <div class="panel" style="grid-column: 1 / -1;">
-        <h2>Monthly Cashflow Schedule</h2>
+        <h2>Monthly Cashflow Schedule (Scenario A)</h2>
         <div class="table-container">
             <table>
                 <thead>
@@ -193,6 +234,11 @@
         const intType = document.getElementById('interestType').value;
         const compFreq = document.getElementById('compoundFreq').value;
         const tenureMonths = parseInt(document.getElementById('tenureMonths').value) || 0;
+
+        // Market Reality Inputs
+        const fdAmt = parseFloat(document.getElementById('fdAmount').value) || 0;
+        const fdRate = parseFloat(document.getElementById('fdRate').value) || 0;
+        const infRate = parseFloat(document.getElementById('inflationRate').value) || 0;
 
         // 2. Base Calculations
         const totalBaseLoan = secAmt + unsecAmt;
@@ -229,14 +275,13 @@
                 interestForMonth = currentPrincipal * effectiveMonthlyRate;
                 totalPreEmiInterestGenerated += interestForMonth;
                 
-                // For tracking in the table
                 interestCoveredThisMonth = Math.min(interestForMonth, preEmiPaid);
                 let surplus = preEmiPaid - interestCoveredThisMonth;
                 principalPaidThisMonth = surplus;
                 
                 currentPrincipal += (interestForMonth - preEmiPaid);
             } else {
-                // SIMPLE INTEREST LOGIC
+                // SIMPLE INTEREST WATERFALL LOGIC
                 interestForMonth = currentPrincipal * (blendedAnnualRate / 12 / 100);
                 totalPreEmiInterestGenerated += interestForMonth;
 
@@ -247,18 +292,15 @@
                     interestCoveredThisMonth = preEmiPaid;
                     principalPaidThisMonth = 0;
                 } else {
-                    // Paid more than interest generated this month
                     interestCoveredThisMonth = interestForMonth;
                     let excessPayment = Math.abs(unpaidForMonth);
                     
-                    // Waterfall: Pay down accrued interest first, then principal
                     if (accruedUnpaidInterest > 0) {
                         if (excessPayment >= accruedUnpaidInterest) {
                             excessPayment -= accruedUnpaidInterest;
-                            interestCoveredThisMonth += accruedUnpaidInterest; // From past accruals
+                            interestCoveredThisMonth += accruedUnpaidInterest; 
                             accruedUnpaidInterest = 0;
                             
-                            // Remaining excess reduces principal
                             principalPaidThisMonth = excessPayment;
                             currentPrincipal -= excessPayment;
                         } else {
@@ -266,14 +308,12 @@
                             interestCoveredThisMonth += excessPayment;
                         }
                     } else {
-                        // Direct principal reduction
                         principalPaidThisMonth = excessPayment;
                         currentPrincipal -= excessPayment;
                     }
                 }
             }
 
-            // Total outstanding at this exact month mark (for the table)
             let runningBalance = intType === 'compound' ? currentPrincipal : (currentPrincipal + accruedUnpaidInterest);
 
             scheduleRows.push(`
@@ -288,7 +328,7 @@
             `);
         }
 
-        // Final Revised Principal before regular EMI starts
+        // Final Revised Principal
         let revisedPrincipal = intType === 'compound' ? currentPrincipal : (currentPrincipal + accruedUnpaidInterest);
 
         // 4. EMI Calculation Phase
@@ -305,7 +345,7 @@
                 let intPortion = emiBalance * standardMonthlyRate;
                 let prinPortion = emi - intPortion;
                 emiBalance -= prinPortion;
-                if(emiBalance < 0.01) emiBalance = 0; // handle rounding
+                if(emiBalance < 0.01) emiBalance = 0; 
                 
                 totalRepaymentInterest += intPortion;
 
@@ -323,17 +363,76 @@
         }
 
         const grandTotalInterest = totalPreEmiInterestGenerated + totalRepaymentInterest;
-        // Total actual cash leaving the pocket
         const totalOutOfPocket = (preEmiPaid * graceMonths) + (emi * nMonths);
+
+        // --- 5. MARKET REALITY & OPPORTUNITY COST MODULE ---
+        const totalMonthsAllPhases = graceMonths + nMonths;
+        const monthlyInflationRate = Math.pow(1 + (infRate / 100), 1 / 12) - 1;
+
+        // SCENARIO A: Keep FD
+        const fdMaturity = fdAmt * Math.pow(1 + (fdRate / 100), totalMonthsAllPhases / 12);
+        const netWealthLostA = totalOutOfPocket - (fdMaturity - fdAmt); 
         
-        // 5. Update UI
+        let pvOutflowsA = 0;
+        for (let m = 1; m <= graceMonths; m++) {
+            pvOutflowsA += preEmiPaid / Math.pow(1 + monthlyInflationRate, m);
+        }
+        for (let m = 1; m <= nMonths; m++) {
+            pvOutflowsA += emi / Math.pow(1 + monthlyInflationRate, graceMonths + m);
+        }
+        const pvFdGains = (fdMaturity - fdAmt) / Math.pow(1 + monthlyInflationRate, totalMonthsAllPhases);
+        const pvNetWealthA = pvOutflowsA - pvFdGains;
+
+        // SCENARIO B: Liquidate FD to lower loan
+        let reducedBaseLoan = totalBaseLoan - fdAmt;
+        let reducedEmi = 0;
+        let totalReducedOutOfPocket = 0;
+        let pvNetWealthB = 0;
+        let netWealthLostB = 0;
+
+        if (reducedBaseLoan > 0) {
+            let reducedPreEmiInterest = reducedBaseLoan * (blendedAnnualRate / 12 / 100) * graceMonths; 
+            let reducedRevisedPrincipal = intType === 'compound' 
+                ? reducedBaseLoan * Math.pow(1 + effectiveMonthlyRate, graceMonths) 
+                : reducedBaseLoan + Math.max(0, reducedPreEmiInterest - (preEmiPaid * graceMonths));
+            
+            reducedEmi = reducedRevisedPrincipal * standardMonthlyRate * Math.pow(1 + standardMonthlyRate, nMonths) / (Math.pow(1 + standardMonthlyRate, nMonths) - 1);
+            
+            pvNetWealthB += fdAmt; // Day 1 Sunk Cost
+            
+            let preEmiToPay = Math.min(reducedPreEmiInterest / graceMonths, preEmiPaid); 
+            for (let m = 1; m <= graceMonths; m++) {
+                pvNetWealthB += preEmiToPay / Math.pow(1 + monthlyInflationRate, m);
+                totalReducedOutOfPocket += preEmiToPay;
+            }
+            for (let m = 1; m <= nMonths; m++) {
+                pvNetWealthB += reducedEmi / Math.pow(1 + monthlyInflationRate, graceMonths + m);
+                totalReducedOutOfPocket += reducedEmi;
+            }
+            netWealthLostB = totalReducedOutOfPocket + fdAmt;
+        } else if (reducedBaseLoan <= 0) {
+            // Loan completely covered by FD
+            reducedEmi = 0;
+            netWealthLostB = totalBaseLoan; // Just the exact amount you spent from FD
+            pvNetWealthB = totalBaseLoan;
+        }
+
+        // --- 6. UPDATE UI ---
         document.getElementById('outBaseLoan').innerText = formatCurrency(totalBaseLoan);
         document.getElementById('outBlendedRate').innerText = `Blended Annual Rate: ${blendedAnnualRate.toFixed(2)}%`;
         document.getElementById('outRevisedPrincipal').innerText = formatCurrency(revisedPrincipal);
         document.getElementById('outEmi').innerText = formatCurrency(emi);
-        document.getElementById('outTotalPocket').innerText = formatCurrency(totalOutOfPocket);
         document.getElementById('outTotalInterest').innerText = formatCurrency(grandTotalInterest);
+        document.getElementById('outTotalPocket').innerText = formatCurrency(totalOutOfPocket);
         
+        document.getElementById('outFdMaturity').innerText = formatCurrency(fdMaturity);
+        document.getElementById('outNetWealthA').innerText = formatCurrency(netWealthLostA);
+        document.getElementById('outPvA').innerText = formatCurrency(pvNetWealthA);
+        
+        document.getElementById('outReducedEmi').innerText = formatCurrency(reducedEmi);
+        document.getElementById('outNetWealthB').innerText = formatCurrency(netWealthLostB);
+        document.getElementById('outPvB').innerText = formatCurrency(pvNetWealthB);
+
         document.getElementById('scheduleBody').innerHTML = scheduleRows.join('');
     }
 
@@ -342,17 +441,23 @@
         document.getElementById('outBlendedRate').innerText = 'Blended Rate: 0%';
         document.getElementById('outRevisedPrincipal').innerText = '0';
         document.getElementById('outEmi').innerText = '0';
-        document.getElementById('outTotalPocket').innerText = '0';
         document.getElementById('outTotalInterest').innerText = '0';
+        document.getElementById('outTotalPocket').innerText = '0';
+        document.getElementById('outFdMaturity').innerText = '0';
+        document.getElementById('outNetWealthA').innerText = '0';
+        document.getElementById('outPvA').innerText = '0';
+        document.getElementById('outReducedEmi').innerText = '0';
+        document.getElementById('outNetWealthB').innerText = '0';
+        document.getElementById('outPvB').innerText = '0';
         document.getElementById('scheduleBody').innerHTML = '';
     }
 
-    // Attach listeners to all inputs to auto-calculate on change
+    // Attach listeners
     document.querySelectorAll('input, select').forEach(element => {
         element.addEventListener('input', calculate);
     });
 
-    // Initial calculation on load
+    // Initial calculation
     calculate();
 </script>
 </body>

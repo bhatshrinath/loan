@@ -39,22 +39,23 @@
         .winner-banner { background-color: var(--winner-bg); color: var(--winner-text); border: 2px solid var(--winner-border); padding: 1.2rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 1.1rem; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .breakdown-row { display: flex; justify-content: space-between; font-size: 0.9rem; border-bottom: 1px dashed #cbd5e1; padding: 0.3rem 0; color: #475569; }
         .breakdown-total { display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: bold; padding-top: 0.5rem; color: #0f172a; }
-        
+
         .sensitivity-table th { background-color: #1e293b; color: white; padding: 0.5rem; text-align: center; font-size: 0.85rem; }
         .sensitivity-table td { text-align: center; padding: 0.6rem; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; }
         .winner-a { background-color: #eff6ff; color: var(--scen-a-color); font-weight: bold; }
         .winner-b { background-color: #f5f3ff; color: var(--scen-b-color); font-weight: bold; }
         .stress-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; padding: 1rem; background: #f8fafc; }
+        .note-flag { font-size: 0.78rem; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; border-radius: 4px; padding: 0.4rem 0.6rem; margin-top: -0.6rem; margin-bottom: 1rem; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    
+
     <div class="panel" style="grid-column: 1 / -1; background-color: #f8fafc; border: 2px solid #cbd5e1;">
         <h2 style="color: #0f172a; border-bottom: none; margin-bottom: 0;">Step 1: Capital Requirement Engine</h2>
-        <p style="font-size: 0.9rem; color: #475569; margin-top: 0.2rem;">Calculates true INR target based on currency depreciation. <strong>Note: Changing these parameters will auto-balance Scenarios A & B to ensure funding hits ₹0 gap perfectly.</strong></p>
-        
+        <p style="font-size: 0.9rem; color: #475569; margin-top: 0.2rem;">Calculates true INR target based on currency depreciation. <strong>Note: Changing these parameters — or either scenario's fixed bank loan amount — will auto-balance the Plug (2nd unsecured loan) so funding hits ₹0 gap perfectly.</strong></p>
+
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; align-items: start; margin-top: 1rem;">
             <div><div class="form-group"><label>Upfront Tuition (€)</label><input type="number" id="eurTuition" value="93000"></div></div>
             <div>
@@ -65,11 +66,11 @@
                 <div class="form-group"><label>Program + Grace (Months)</label><input type="number" id="eurMonths" value="28"></div>
                 <div class="form-group" style="background: #e0f2fe; padding: 0.5rem; border-radius: 6px;">
                     <label style="color: #0369a1;">Expected INR Dep. vs EUR (%)</label>
-                    <input type="number" id="inrDepRate" value="7.0" step="0.1" style="border-color: #bae6fd;">
+                    <input type="number" id="inrDepRate" value="5" step="0.1" style="border-color: #bae6fd;">
                 </div>
             </div>
             <div>
-                <div class="form-group"><label>Current Exchange Rate (INR/EUR)</label><input type="number" id="currentFx" value="111.1" step="0.1"></div>
+                <div class="form-group"><label>Current Exchange Rate (INR/EUR)</label><input type="number" id="currentFx" value="109.98801" step="0.00001"></div>
                 <div style="background: #1e293b; color: white; padding: 1rem; border-radius: 8px; text-align: center;">
                     <div style="font-size: 0.85rem; color: #94a3b8;">Total True INR Target</div>
                     <strong id="outMasterTargetInr" style="font-size: 1.6rem; color: #38bdf8;">0</strong>
@@ -81,77 +82,112 @@
 
     <div>
         <div class="panel" style="border: 2px solid #3b82f6;">
-            <h2 style="color: #1d4ed8; border-bottom: none; margin-bottom: 0;">Scenario A Configuration</h2>
-            <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.2rem;">Keep FD as collateral. <em>(Unsecured Loan acts as the plug for macro changes)</em>.</p>
-            
+            <h2 style="color: #1d4ed8; border-bottom: none; margin-bottom: 0;">Scenario A: Axis Bank (Unsecured)</h2>
+            <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.2rem;">Your full ₹60L FD stays untouched — no collateral required. <em>Shortfall vs. target is plugged by a secondary unsecured loan.</em></p>
+
             <div class="split-grid" style="background: #eff6ff; padding: 1rem; border-radius: 8px; margin-bottom: 1.2rem;">
-                <div class="form-group" style="margin-bottom: 0;"><label style="color: #1d4ed8;">FD Kept Pledged (₹)</label><input type="number" id="fdKeptA" value="4000000" step="100000"></div>
-                <div class="form-group" style="margin-bottom: 0;"><label style="color: #1d4ed8;">FD Liquidated (₹)</label><input type="number" id="fdLiquidatedA" value="3000000" step="100000"></div>
+                <div class="form-group" style="margin-bottom: 0;"><label style="color: #1d4ed8;">FD Kept Untouched (₹)</label><input type="number" id="fdKeptA" value="6000000" step="100000"></div>
+                <div class="form-group" style="margin-bottom: 0;"><label style="color: #1d4ed8;">FD Liquidated (₹)</label><input type="number" id="fdLiquidatedA" value="0" step="100000"></div>
             </div>
 
             <div class="split-grid">
-                <div class="form-group"><label>Secured Loan (₹)</label><input type="number" id="secAmountA" value="13500000" step="100000"></div>
-                <div class="form-group"><label>Secured Rate (%)</label><input type="number" id="secRateA" value="9.5" step="0.1"></div>
+                <div class="form-group"><label>Axis Bank Loan (₹)</label><input type="number" id="secAmountA" value="13705372" step="1000"></div>
+                <div class="form-group"><label>Axis Rate (%)</label><input type="number" id="secRateA" value="9.5" step="0.1"></div>
             </div>
             <div class="split-grid">
-                <div class="form-group"><label>Unsecured Loan (₹)</label><input type="number" id="unsecAmountA" value="2280571" step="100000"></div>
-                <div class="form-group"><label>Unsecured Rate (%)</label><input type="number" id="unsecRateA" value="11.5" step="0.1"></div>
+                <div class="form-group"><label>Plug: 2nd Unsecured Loan (₹)</label><input type="number" id="unsecAmountA" value="0" step="100000"></div>
+                <div class="form-group"><label>Plug Rate (%)</label><input type="number" id="unsecRateA" value="11" step="0.1"></div>
             </div>
-            
+
             <div class="split-grid" style="border-top: 1px dashed #bfdbfe; padding-top: 1rem; margin-top: 0.5rem;">
-                <div class="form-group" style="margin-bottom: 0;"><label>Interest Type</label><select id="interestTypeA"><option value="compound">Compounding</option><option value="simple">Simple</option></select></div>
+                <div class="form-group" style="margin-bottom: 0;"><label>Moratorium (Months)</label><input type="number" id="moratoriumA" value="22" step="1"></div>
+                <div class="form-group" style="margin-bottom: 0;"><label>Total Tenure (Months)</label><input type="number" id="totalTenureA" value="142" step="1"></div>
+            </div>
+            <div class="split-grid" style="padding-top: 0.8rem;">
+                <div class="form-group" style="margin-bottom: 0;"><label>Monthly Payment During Study (₹)</label><input type="number" id="studyPaymentA" value="5000" step="500"></div>
+                <div class="form-group" style="margin-bottom: 0;"><label>Start Payment (Month #)</label><input type="number" id="startPaymentA" value="1" step="1"></div>
+            </div>
+            <div class="note-flag" style="margin-top: 0.6rem;">₹5,000/mo partial-simple-interest payment is per the RM's WhatsApp — needs written confirmation.</div>
+            <div class="split-grid" style="padding-top: 0.2rem;">
+                <div class="form-group" style="margin-bottom: 0;"><label>Processing Fee (₹)</label><input type="number" id="procFeeA" value="20000" step="1000"></div>
+                <div class="form-group" style="margin-bottom: 0;"><label>Insurance (₹)</label><input type="number" id="insuranceA" value="283854" step="1000"></div>
+            </div>
+            <div class="split-grid" style="align-items: center; padding-top: 0.4rem;">
+                <div class="form-group" style="margin-bottom: 0; display:flex; align-items:center; gap:0.5rem;">
+                    <input type="checkbox" id="insuranceFinancedA" checked style="width:auto;">
+                    <label style="margin-bottom:0; font-weight:500; font-size:0.78rem;">Insurance financed via loan (cash in hand is less; interest still on full loan)</label>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;"><label>Annual Rate Step-Up (%, floating)</label><input type="number" id="rateStepUpA" value="0.25" step="0.05"></div>
+            </div>
+
+            <div class="split-grid" style="border-top: 1px dashed #bfdbfe; padding-top: 1rem; margin-top: 0.5rem;">
+                <div class="form-group" style="margin-bottom: 0;"><label>Interest Type (Moratorium)</label><select id="interestTypeA"><option value="compound">Compounding</option><option value="simple" selected>Simple (Partial Interest)</option></select></div>
                 <div class="form-group" style="margin-bottom: 0;"><label>Compounding Freq</label><select id="compoundFreqA"><option value="daily">Daily</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></div>
             </div>
             <div id="gapA" class="gap-indicator">Gap: --</div>
         </div>
 
         <div class="panel" style="border: 2px solid #8b5cf6;">
-            <h2 style="color: #6d28d9; border-bottom: none; margin-bottom: 0;">Scenario B Configuration</h2>
-            <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.2rem;">Liquidate FD heavily. <em>(FD Liquidated acts as the plug for macro changes)</em>.</p>
-            
-            <div class="split-grid" style="background: #f5f3ff; padding: 1rem; border-radius: 8px; margin-bottom: 1.2rem;">
-                <div class="form-group" style="margin-bottom: 0;"><label style="color: #6d28d9;">FD Kept Untouched (₹)</label><input type="number" id="fdKeptB" value="1719429" step="100000"></div>
-                <div class="form-group" style="margin-bottom: 0;"><label style="color: #6d28d9;">FD Liquidated (₹)</label><input type="number" id="fdLiquidatedB" value="5280571" step="100000"></div>
+            <h2 style="color: #6d28d9; border-bottom: none; margin-bottom: 0;">Scenario B: HDFC Credila (FD-Backed)</h2>
+            <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.2rem;">A slice of your ₹60L FD is pledged as collateral. <em>Shortfall vs. target is plugged by a secondary unsecured loan.</em></p>
+
+            <div class="split-grid" style="background: #f5f3ff; padding: 1rem; border-radius: 8px; margin-bottom: 0.6rem;">
+                <div class="form-group" style="margin-bottom: 0;"><label style="color: #6d28d9;">FD Pledged as Collateral (₹)</label><input type="number" id="fdPledgedB" value="3000000" step="100000"></div>
+                <div class="form-group" style="margin-bottom: 0;"><label style="color: #6d28d9;">FD Kept Free (₹)</label><input type="number" id="fdFreeB" value="3000000" step="100000"></div>
             </div>
+            <div class="note-flag">Sanction letter says ₹30L pledged; you'd earlier mentioned ₹40L — confirm the final figure.</div>
+            <div class="form-group" style="margin-bottom: 1.2rem;"><label>FD Liquidated (₹)</label><input type="number" id="fdLiquidatedB" value="0" step="100000"></div>
 
             <div class="split-grid">
-                <div class="form-group"><label>Secured Loan (₹)</label><input type="number" id="secAmountB" value="0" step="100000"></div>
-                <div class="form-group"><label>Secured Rate (%)</label><input type="number" id="secRateB" value="9.5" step="0.1"></div>
+                <div class="form-group"><label>HDFC Credila Loan (₹)</label><input type="number" id="secAmountB" value="14000000" step="1000"></div>
+                <div class="form-group"><label>HDFC Rate (%)</label><input type="number" id="secRateB" value="9.8" step="0.1"></div>
             </div>
             <div class="split-grid">
-                <div class="form-group"><label>Unsecured Loan (₹)</label><input type="number" id="unsecAmountB" value="13500000" step="100000"></div>
-                <div class="form-group"><label>Unsecured Rate (%)</label><input type="number" id="unsecRateB" value="10.0" step="0.1"></div>
+                <div class="form-group"><label>Plug: 2nd Unsecured Loan (₹)</label><input type="number" id="unsecAmountB" value="0" step="100000"></div>
+                <div class="form-group"><label>Plug Rate (%)</label><input type="number" id="unsecRateB" value="11" step="0.1"></div>
             </div>
 
             <div class="split-grid" style="border-top: 1px dashed #ddd6fe; padding-top: 1rem; margin-top: 0.5rem;">
-                <div class="form-group" style="margin-bottom: 0;"><label>Interest Type</label><select id="interestTypeB"><option value="compound">Compounding</option><option value="simple">Simple</option></select></div>
+                <div class="form-group" style="margin-bottom: 0;"><label>Moratorium (Months)</label><input type="number" id="moratoriumB" value="28" step="1"></div>
+                <div class="form-group" style="margin-bottom: 0;"><label>Total Tenure (Months)</label><input type="number" id="totalTenureB" value="168" step="1"></div>
+            </div>
+            <div class="split-grid" style="padding-top: 0.8rem;">
+                <div class="form-group" style="margin-bottom: 0;"><label>Monthly Pre-EMI During Study (₹)</label><input type="number" id="studyPaymentB" value="20000" step="500"></div>
+                <div class="form-group" style="margin-bottom: 0;"><label>Start Payment (Month #)</label><input type="number" id="startPaymentB" value="1" step="1"></div>
+            </div>
+            <div class="split-grid" style="padding-top: 0.2rem;">
+                <div class="form-group" style="margin-bottom: 0;"><label>Processing Fee (₹)</label><input type="number" id="procFeeB" value="40000" step="1000"></div>
+                <div class="form-group" style="margin-bottom: 0;"><label>Insurance (₹, est. ₹2.7–4.1L)</label><input type="number" id="insuranceB" value="340000" step="1000"></div>
+            </div>
+            <div class="note-flag">Processing fee shown is post-negotiation (original quote was ₹2,06,500). Insurance is HDFC Life + Tata AIG estimate — exact amount pending.</div>
+            <div class="split-grid" style="align-items: center; padding-top: 0.4rem;">
+                <div class="form-group" style="margin-bottom: 0; display:flex; align-items:center; gap:0.5rem;">
+                    <input type="checkbox" id="insuranceFinancedB" checked style="width:auto;">
+                    <label style="margin-bottom:0; font-weight:500; font-size:0.78rem;">Insurance financed via loan (cash in hand is less; interest still on full loan)</label>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;"><label>Annual Rate Step-Up (%, floating)</label><input type="number" id="rateStepUpB" value="0.25" step="0.05"></div>
+            </div>
+
+            <div class="split-grid" style="border-top: 1px dashed #ddd6fe; padding-top: 1rem; margin-top: 0.5rem;">
+                <div class="form-group" style="margin-bottom: 0;"><label>Interest Type (Moratorium)</label><select id="interestTypeB"><option value="compound" selected>Compounding</option><option value="simple">Simple</option></select></div>
                 <div class="form-group" style="margin-bottom: 0;"><label>Compounding Freq</label><select id="compoundFreqB"><option value="daily">Daily</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></div>
             </div>
             <div id="gapB" class="gap-indicator">Gap: --</div>
         </div>
 
         <div class="panel">
-            <h2>Shared Cashflow Reality</h2>
-            <div class="split-grid" style="background: #f0fdf4; padding: 1rem; border-radius: 8px; border: 1px solid #bbf7d0; margin-bottom: 1.2rem;">
-                <div class="form-group" style="margin-bottom: 0;"><label style="color: #166534;">Monthly Pre-EMI Payment (€)</label><input type="number" id="eurPreEmi" value="500" step="50" style="border-color: #bbf7d0;"></div>
-                <div class="form-group" style="margin-bottom: 0;"><label style="color: #166534;">Start Pre-EMI (Month #)</label><input type="number" id="startPreEmiMonth" value="17" step="1" style="border-color: #bbf7d0;"></div>
-            </div>
-
+            <h2>Shared Assumptions</h2>
+            <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.2rem;">Moratorium, tenure and study-period payments now live inside each scenario above (Axis: 22m moratorium / 142m total vs. HDFC: 28m / 168m) since the two banks' terms differ and everything is paid in INR.</p>
             <div class="split-grid">
-                <div class="form-group" style="margin-bottom: 0;"><label>Final Repayment Tenure (Months)</label><input type="number" id="tenureMonths" value="152" step="1"></div>
                 <div class="form-group" style="margin-bottom: 0;"><label>FD Interest Rate (%)</label><input type="number" id="fdRate" value="6.0" step="0.1"></div>
-            </div>
-            
-            <div class="form-group" style="margin-top: 1.2rem; margin-bottom: 0;">
-                <label>Euro Discount Rate / EUR Inflation (%)</label>
-                <input type="number" id="eurDiscountRate" value="2.0" step="0.1">
+                <div class="form-group" style="margin-bottom: 0;"><label>Euro Discount Rate / EUR Inflation (%)</label><input type="number" id="eurDiscountRate" value="2.0" step="0.1"></div>
             </div>
         </div>
     </div>
 
     <div class="panel" style="height: fit-content;">
         <h2>Financial Analysis & True Euro NPV</h2>
-        
+
         <div id="winnerBanner" class="winner-banner">Calculating optimal scenario...</div>
 
         <div style="margin-bottom: 1.5rem; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden;">
@@ -184,14 +220,15 @@
         </div>
 
         <div class="result-box" style="border-left-color: #3b82f6;">
-            <label style="color: #1d4ed8; font-size: 1.1rem;">Scenario A Performance</label>
+            <label style="color: #1d4ed8; font-size: 1.1rem;">Scenario A — Axis Bank Performance</label>
             <div style="font-size: 1rem; margin-top: 0.8rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                 <div>Blended Base Rate:</div> <strong id="outBlendedRateA">0%</strong>
                 <div>Final Regular EMI (INR):</div> <strong id="outEmiA" style="color:#10b981;">0</strong>
             </div>
             <div style="background: #eff6ff; padding: 1rem; border-radius: 6px; margin-top: 1rem;">
                 <div style="font-weight: 600; color: #1d4ed8; margin-bottom: 0.5rem;">True Net Cost in Euros (FX Adjusted)</div>
-                <div class="breakdown-row"><span>Total EMIs Paid to Bank:</span> <span id="outFxEmiA">€0</span></div>
+                <div class="breakdown-row"><span>Total EMIs + Study-Period Payments:</span> <span id="outFxEmiA">€0</span></div>
+                <div class="breakdown-row"><span>One-Time Fees (Processing + Insurance):</span> <span id="outFeesA">€0</span></div>
                 <div class="breakdown-row"><span>Starting Value of Total FD:</span> <span id="outFxStartFdA">€0</span></div>
                 <div class="breakdown-row" style="color: #10b981;"><span>(-) Final Matured FD Value:</span> <span id="outFxEndFdA">-€0</span></div>
                 <div class="breakdown-total"><span style="color: #1d4ed8;">Nominal Euro Wealth Drained:</span> <span id="outFxCostA" style="color: #1d4ed8;">€0</span></div>
@@ -203,14 +240,15 @@
         </div>
 
         <div class="result-box" style="border-left-color: #8b5cf6;">
-            <label style="color: #6d28d9; font-size: 1.1rem;">Scenario B Performance</label>
+            <label style="color: #6d28d9; font-size: 1.1rem;">Scenario B — HDFC Credila Performance</label>
             <div style="font-size: 1rem; margin-top: 0.8rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                 <div>Blended Base Rate:</div> <strong id="outBlendedRateB">0%</strong>
                 <div>Final Regular EMI (INR):</div> <strong id="outEmiB" style="color:#10b981;">0</strong>
             </div>
             <div style="background: #f5f3ff; padding: 1rem; border-radius: 6px; margin-top: 1rem;">
                 <div style="font-weight: 600; color: #6d28d9; margin-bottom: 0.5rem;">True Net Cost in Euros (FX Adjusted)</div>
-                <div class="breakdown-row"><span>Total EMIs Paid to Bank:</span> <span id="outFxEmiB">€0</span></div>
+                <div class="breakdown-row"><span>Total EMIs + Study-Period Payments:</span> <span id="outFxEmiB">€0</span></div>
+                <div class="breakdown-row"><span>One-Time Fees (Processing + Insurance):</span> <span id="outFeesB">€0</span></div>
                 <div class="breakdown-row"><span>Starting Value of Total FD:</span> <span id="outFxStartFdB">€0</span></div>
                 <div class="breakdown-row" style="color: #10b981;"><span>(-) Final Matured FD Value:</span> <span id="outFxEndFdB">-€0</span></div>
                 <div class="breakdown-total"><span style="color: #6d28d9;">Nominal Euro Wealth Drained:</span> <span id="outFxCostB" style="color: #6d28d9;">€0</span></div>
@@ -224,8 +262,8 @@
 
     <div class="panel" style="grid-column: 1 / -1;">
         <div class="tab-container">
-            <button class="tab-btn active" id="btnTabA" onclick="switchTab('A')">View Scenario A Cashflow</button>
-            <button class="tab-btn" id="btnTabB" onclick="switchTab('B')">View Scenario B Cashflow</button>
+            <button class="tab-btn active" id="btnTabA" onclick="switchTab('A')">View Scenario A Cashflow (Axis)</button>
+            <button class="tab-btn" id="btnTabB" onclick="switchTab('B')">View Scenario B Cashflow (HDFC Credila)</button>
         </div>
         <div class="table-container" id="tableContainerA">
             <table><thead><tr><th>Month</th><th>Phase</th><th>Payment (INR)</th><th>Actual Euro Burden (€)</th><th>Interest Paid</th><th>Remaining Balance</th></tr></thead><tbody id="scheduleBodyA"></tbody></table>
@@ -251,11 +289,11 @@
         const eurTuition = parseFloat(document.getElementById('eurTuition').value) || 0;
         const eurAccomm = parseFloat(document.getElementById('eurAccomm').value) || 0;
         const eurLiving = parseFloat(document.getElementById('eurLiving').value) || 0;
-        const graceMonths = parseInt(document.getElementById('eurMonths').value) || 0; 
+        const graceMonths = parseInt(document.getElementById('eurMonths').value) || 0;
         const currentFx = parseFloat(document.getElementById('currentFx').value) || 0;
-        
+
         const monthlyFxGrowth = Math.pow(1 + (depRate / 100), 1 / 12) - 1;
-        let target = eurTuition * currentFx; 
+        let target = eurTuition * currentFx;
         const monthlyLivingEur = eurAccomm + eurLiving;
         for (let m = 1; m <= graceMonths; m++) {
             let fxForMonth = currentFx * Math.pow(1 + monthlyFxGrowth, m);
@@ -264,78 +302,139 @@
         return target;
     }
 
-    // Auto-balance function: Modifies the actual input fields so user sees the "plug" happening
+    // Auto-balance: the fixed bank loan (Axis / HDFC) stays as entered; the Plug
+    // (2nd unsecured loan, 11%) absorbs whatever is left to hit the ₹0 gap.
+    // If insurance is financed out of the loan sanction, that slice never reaches
+    // your target funding (though interest still accrues on the full loan), so it
+    // widens the shortfall the Plug loan needs to cover.
     function autoBalance() {
         const targetInr = calculateTargetInr(parseFloat(document.getElementById('inrDepRate').value) || 0);
-        
-        // Balance Scenario A (Plug = Unsecured Loan)
+
         const secA = parseFloat(document.getElementById('secAmountA').value) || 0;
         const liqA = parseFloat(document.getElementById('fdLiquidatedA').value) || 0;
-        document.getElementById('unsecAmountA').value = Math.max(0, targetInr - secA - liqA).toFixed(0);
+        const insA = parseFloat(document.getElementById('insuranceA').value) || 0;
+        const insDeductA = document.getElementById('insuranceFinancedA').checked ? insA : 0;
+        document.getElementById('unsecAmountA').value = Math.max(0, targetInr - secA - liqA + insDeductA).toFixed(0);
 
-        // Balance Scenario B (Plug = Liquidated FD)
         const secB = parseFloat(document.getElementById('secAmountB').value) || 0;
-        const unsecB = parseFloat(document.getElementById('unsecAmountB').value) || 0;
-        const oldLiqB = parseFloat(document.getElementById('fdLiquidatedB').value) || 0;
-        const oldKeptB = parseFloat(document.getElementById('fdKeptB').value) || 0;
-        const totalFdB = oldLiqB + oldKeptB;
-        
-        const newLiqB = Math.max(0, targetInr - secB - unsecB);
-        document.getElementById('fdLiquidatedB').value = newLiqB.toFixed(0);
-        document.getElementById('fdKeptB').value = Math.max(0, totalFdB - newLiqB).toFixed(0);
+        const liqB = parseFloat(document.getElementById('fdLiquidatedB').value) || 0;
+        const insB = parseFloat(document.getElementById('insuranceB').value) || 0;
+        const insDeductB = document.getElementById('insuranceFinancedB').checked ? insB : 0;
+        document.getElementById('unsecAmountB').value = Math.max(0, targetInr - secB - liqB + insDeductB).toFixed(0);
     }
 
-    function runScenarioEngine(secAmt, secRate, unsecAmt, unsecRate, fdLiquidated, fdKept, targetInr, intType, compFreq, depRate, discountRate, fdRate) {
-        const graceMonths = parseInt(document.getElementById('eurMonths').value) || 0;
-        const eurPreEmi = parseFloat(document.getElementById('eurPreEmi').value) || 0;
-        const startPreEmiMonth = parseInt(document.getElementById('startPreEmiMonth').value) || 1;
-        const tenureMonths = parseInt(document.getElementById('tenureMonths').value) || 0;
+    function readCfgA(depRate, discountRate, fdRate, targetInr) {
+        return {
+            secAmt: parseFloat(document.getElementById('secAmountA').value) || 0,
+            secRate: parseFloat(document.getElementById('secRateA').value) || 0,
+            unsecAmt: parseFloat(document.getElementById('unsecAmountA').value) || 0,
+            unsecRate: parseFloat(document.getElementById('unsecRateA').value) || 0,
+            fdLiquidated: parseFloat(document.getElementById('fdLiquidatedA').value) || 0,
+            fdKept: parseFloat(document.getElementById('fdKeptA').value) || 0,
+            intType: document.getElementById('interestTypeA').value,
+            compFreq: document.getElementById('compoundFreqA').value,
+            graceMonths: parseInt(document.getElementById('moratoriumA').value) || 0,
+            totalTenure: parseInt(document.getElementById('totalTenureA').value) || 0,
+            studyPaymentInr: parseFloat(document.getElementById('studyPaymentA').value) || 0,
+            startPaymentMonth: parseInt(document.getElementById('startPaymentA').value) || 1,
+            procFee: parseFloat(document.getElementById('procFeeA').value) || 0,
+            insurance: parseFloat(document.getElementById('insuranceA').value) || 0,
+            insuranceFinanced: document.getElementById('insuranceFinancedA').checked,
+            rateStepUp: parseFloat(document.getElementById('rateStepUpA').value) || 0,
+            depRate, discountRate, fdRate, targetInr
+        };
+    }
+
+    function readCfgB(depRate, discountRate, fdRate, targetInr) {
+        const fdPledged = parseFloat(document.getElementById('fdPledgedB').value) || 0;
+        const fdFree = parseFloat(document.getElementById('fdFreeB').value) || 0;
+        return {
+            secAmt: parseFloat(document.getElementById('secAmountB').value) || 0,
+            secRate: parseFloat(document.getElementById('secRateB').value) || 0,
+            unsecAmt: parseFloat(document.getElementById('unsecAmountB').value) || 0,
+            unsecRate: parseFloat(document.getElementById('unsecRateB').value) || 0,
+            fdLiquidated: parseFloat(document.getElementById('fdLiquidatedB').value) || 0,
+            fdKept: fdPledged + fdFree,
+            intType: document.getElementById('interestTypeB').value,
+            compFreq: document.getElementById('compoundFreqB').value,
+            graceMonths: parseInt(document.getElementById('moratoriumB').value) || 0,
+            totalTenure: parseInt(document.getElementById('totalTenureB').value) || 0,
+            studyPaymentInr: parseFloat(document.getElementById('studyPaymentB').value) || 0,
+            startPaymentMonth: parseInt(document.getElementById('startPaymentB').value) || 1,
+            procFee: parseFloat(document.getElementById('procFeeB').value) || 0,
+            insurance: parseFloat(document.getElementById('insuranceB').value) || 0,
+            insuranceFinanced: document.getElementById('insuranceFinancedB').checked,
+            rateStepUp: parseFloat(document.getElementById('rateStepUpB').value) || 0,
+            depRate, discountRate, fdRate, targetInr
+        };
+    }
+
+    function runScenarioEngine(p) {
         const currentFx = parseFloat(document.getElementById('currentFx').value) || 0;
-        
-        const monthlyFxGrowth = Math.pow(1 + (depRate / 100), 1 / 12) - 1;
-        const monthlyDiscount = Math.pow(1 + (discountRate / 100), 1 / 12) - 1;
+        const graceMonths = p.graceMonths;
+        const tenureMonths = Math.max(0, p.totalTenure - p.graceMonths);
+
+        const monthlyFxGrowth = Math.pow(1 + (p.depRate / 100), 1 / 12) - 1;
+        const monthlyDiscount = Math.pow(1 + (p.discountRate / 100), 1 / 12) - 1;
         const totalMonths = graceMonths + tenureMonths;
         const finalFx = currentFx * Math.pow(1 + monthlyFxGrowth, totalMonths);
 
-        const totalLoan = secAmt + unsecAmt;
-        const blendedRate = totalLoan > 0 ? ((secAmt * secRate) + (unsecAmt * unsecRate)) / totalLoan : 0;
-        
-        let effectiveMonthlyRate = 0;
-        if (compFreq === 'monthly' || intType === 'simple') effectiveMonthlyRate = blendedRate / 12 / 100;
-        else if (compFreq === 'daily') effectiveMonthlyRate = Math.pow(1 + (blendedRate / 365 / 100), 365 / 12) - 1;
-        else if (compFreq === 'yearly') effectiveMonthlyRate = Math.pow(1 + (blendedRate / 100), 1 / 12) - 1;
-        
-        const standardMonthlyRate = blendedRate / 12 / 100;
-        const gap = (totalLoan + fdLiquidated) - targetInr;
-        
+        const totalLoan = p.secAmt + p.unsecAmt;
+        const blendedRate = totalLoan > 0 ? ((p.secAmt * p.secRate) + (p.unsecAmt * p.unsecRate)) / totalLoan : 0;
+        const rateStepUp = p.rateStepUp || 0;
+
+        // Floating-rate assumption: the blended rate escalates every 12 months (repo/MCLR-style reset).
+        const blendedRateForYear = (yearIdx) => blendedRate + rateStepUp * yearIdx;
+        const effectiveMonthlyRateFor = (curBlendedRate) => {
+            if (p.compFreq === 'monthly' || p.intType === 'simple') return curBlendedRate / 12 / 100;
+            if (p.compFreq === 'daily') return Math.pow(1 + (curBlendedRate / 365 / 100), 365 / 12) - 1;
+            if (p.compFreq === 'yearly') return Math.pow(1 + (curBlendedRate / 100), 1 / 12) - 1;
+            return curBlendedRate / 12 / 100;
+        };
+
+        // Insurance financed out of the loan sanction never reaches your target funding
+        // (it's spent on the premium instead), even though interest still accrues on the
+        // full sanctioned principal below. That widens the real funding gap.
+        const insuranceDeduction = p.insuranceFinanced ? (p.insurance || 0) : 0;
+        const gap = (totalLoan + p.fdLiquidated - insuranceDeduction) - p.targetInr;
+
         let currentPrincipal = totalLoan;
-        let accruedUnpaidInterest = 0; 
-        let totalEmiPaidEur = 0; 
-        let npvEur = fdLiquidated / currentFx; 
+        let accruedUnpaidInterest = 0;
+        let totalEmiPaidEur = 0;
+        let npvEur = p.fdLiquidated / currentFx;
         let scheduleRows = [];
 
+        // One-time upfront costs incurred at month 0. Processing fee is assumed paid in cash.
+        // Insurance is only added here if NOT financed via the loan (financed insurance's true
+        // cost already shows up as the extra interest paid on that slice of principal).
+        const upfrontFeesInr = (p.procFee || 0) + (p.insuranceFinanced ? 0 : (p.insurance || 0));
+        const upfrontFeesEur = currentFx > 0 ? upfrontFeesInr / currentFx : 0;
+        totalEmiPaidEur += upfrontFeesEur;
+        npvEur += upfrontFeesEur;
+
         for (let m = 1; m <= graceMonths; m++) {
-            let actualPaymentThisMonthEur = 0; let actualPaymentThisMonthInr = 0;
             let fxRateNow = currentFx * Math.pow(1 + monthlyFxGrowth, m);
-            
-            if (m >= startPreEmiMonth && eurPreEmi > 0) {
-                actualPaymentThisMonthEur = eurPreEmi;
-                actualPaymentThisMonthInr = eurPreEmi * fxRateNow;
-            }
+            let yearIdx = Math.floor((m - 1) / 12);
+            let curBlendedRate = blendedRateForYear(yearIdx);
+            let effectiveMonthlyRate = effectiveMonthlyRateFor(curBlendedRate);
+            let standardMonthlyRate = curBlendedRate / 12 / 100;
+
+            let actualPaymentThisMonthInr = (m >= p.startPaymentMonth && p.studyPaymentInr > 0) ? p.studyPaymentInr : 0;
+            let actualPaymentThisMonthEur = actualPaymentThisMonthInr / fxRateNow;
 
             let interestForMonth = 0;
-            if (intType === 'compound') {
+            if (p.intType === 'compound') {
                 interestForMonth = currentPrincipal * effectiveMonthlyRate;
                 let interestCovered = Math.min(interestForMonth, actualPaymentThisMonthInr);
                 let surplus = actualPaymentThisMonthInr - interestCovered;
                 if (surplus > currentPrincipal) {
-                    surplus = currentPrincipal; actualPaymentThisMonthInr = interestCovered + surplus; actualPaymentThisMonthEur = actualPaymentThisMonthInr / fxRateNow; 
+                    surplus = currentPrincipal; actualPaymentThisMonthInr = interestCovered + surplus; actualPaymentThisMonthEur = actualPaymentThisMonthInr / fxRateNow;
                 }
                 currentPrincipal += (interestForMonth - actualPaymentThisMonthInr);
             } else {
                 interestForMonth = currentPrincipal * standardMonthlyRate;
                 let unpaidForMonth = interestForMonth - actualPaymentThisMonthInr;
-                if (unpaidForMonth >= 0) { accruedUnpaidInterest += unpaidForMonth; } 
+                if (unpaidForMonth >= 0) { accruedUnpaidInterest += unpaidForMonth; }
                 else {
                     let excess = Math.abs(unpaidForMonth);
                     if (accruedUnpaidInterest > 0) {
@@ -351,40 +450,52 @@
 
             totalEmiPaidEur += actualPaymentThisMonthEur;
             npvEur += actualPaymentThisMonthEur / Math.pow(1 + monthlyDiscount, m);
-            let runningBalance = intType === 'compound' ? currentPrincipal : (currentPrincipal + accruedUnpaidInterest);
-            scheduleRows.push(`<tr><td>${m}</td><td class="phase-pre">Pre-EMI</td><td>${formatCurrency(actualPaymentThisMonthInr)}</td><td style="color:#64748b;">${formatEur(actualPaymentThisMonthEur)}</td><td>${formatCurrency(interestForMonth)}</td><td>${formatCurrency(runningBalance)}</td></tr>`);
+            let runningBalance = p.intType === 'compound' ? currentPrincipal : (currentPrincipal + accruedUnpaidInterest);
+            scheduleRows.push(`<tr><td>${m}</td><td class="phase-pre">Moratorium</td><td>${formatCurrency(actualPaymentThisMonthInr)}</td><td style="color:#64748b;">${formatEur(actualPaymentThisMonthEur)}</td><td>${formatCurrency(interestForMonth)}</td><td>${formatCurrency(runningBalance)}</td></tr>`);
         }
 
-        let revisedPrincipal = intType === 'compound' ? currentPrincipal : (currentPrincipal + accruedUnpaidInterest);
-        let emi = 0; let emiBalance = revisedPrincipal;
+        let revisedPrincipal = p.intType === 'compound' ? currentPrincipal : (currentPrincipal + accruedUnpaidInterest);
+        let emi = 0; let emiBalance = revisedPrincipal; let lastMonthlyRate = null;
 
-        if (tenureMonths > 0 && standardMonthlyRate > 0 && revisedPrincipal > 0) {
-            emi = revisedPrincipal * standardMonthlyRate * Math.pow(1 + standardMonthlyRate, tenureMonths) / (Math.pow(1 + standardMonthlyRate, tenureMonths) - 1);
+        if (tenureMonths > 0 && revisedPrincipal > 0) {
             for(let m = 1; m <= tenureMonths; m++) {
                 if (emiBalance <= 0) break;
-                let intPortion = emiBalance * standardMonthlyRate; let prinPortion = emi - intPortion;
+                let globalMonth = graceMonths + m;
+                let yearIdx = Math.floor((globalMonth - 1) / 12);
+                let curMonthlyRate = blendedRateForYear(yearIdx) / 12 / 100;
+
+                // Floating-rate reset: bank recalculates EMI over the remaining tenure whenever the rate changes.
+                if (curMonthlyRate !== lastMonthlyRate) {
+                    let remainingMonths = tenureMonths - m + 1;
+                    emi = curMonthlyRate > 0
+                        ? emiBalance * curMonthlyRate * Math.pow(1 + curMonthlyRate, remainingMonths) / (Math.pow(1 + curMonthlyRate, remainingMonths) - 1)
+                        : emiBalance / remainingMonths;
+                    lastMonthlyRate = curMonthlyRate;
+                }
+
+                let intPortion = emiBalance * curMonthlyRate; let prinPortion = emi - intPortion;
                 let actualEmiThisMonth = emi;
                 if (emiBalance < prinPortion) { prinPortion = emiBalance; actualEmiThisMonth = prinPortion + intPortion; }
                 emiBalance -= prinPortion;
-                
-                let fxRateNow = currentFx * Math.pow(1 + monthlyFxGrowth, graceMonths + m);
+
+                let fxRateNow = currentFx * Math.pow(1 + monthlyFxGrowth, globalMonth);
                 let eurCostNow = actualEmiThisMonth / fxRateNow;
                 totalEmiPaidEur += eurCostNow;
-                npvEur += eurCostNow / Math.pow(1 + monthlyDiscount, graceMonths + m);
+                npvEur += eurCostNow / Math.pow(1 + monthlyDiscount, globalMonth);
 
-                scheduleRows.push(`<tr><td>${graceMonths + m}</td><td class="phase-emi">Repayment</td><td>${formatCurrency(actualEmiThisMonth)}</td><td style="color:#0284c7;font-weight:bold;">${formatEur(eurCostNow)}</td><td>${formatCurrency(intPortion)}</td><td>${formatCurrency(emiBalance)}</td></tr>`);
+                scheduleRows.push(`<tr><td>${globalMonth}</td><td class="phase-emi">Repayment</td><td>${formatCurrency(actualEmiThisMonth)}</td><td style="color:#0284c7;font-weight:bold;">${formatEur(eurCostNow)}</td><td>${formatCurrency(intPortion)}</td><td>${formatCurrency(emiBalance)}</td></tr>`);
             }
         }
 
-        let totalFd = fdKept + fdLiquidated;
+        let totalFd = p.fdKept + p.fdLiquidated;
         let initialFdEur = totalFd / currentFx;
-        let fdMaturityVal = fdKept * Math.pow(1 + (fdRate / 100), totalMonths / 12);
+        let fdMaturityVal = p.fdKept * Math.pow(1 + (p.fdRate / 100), totalMonths / 12);
         let finalFdEur = fdMaturityVal / finalFx;
-        
+
         let trueNetEuroCost = totalEmiPaidEur + initialFdEur - finalFdEur;
         npvEur -= finalFdEur / Math.pow(1 + monthlyDiscount, totalMonths);
 
-        return { blendedRate, gap, emi, scheduleRowsHtml: scheduleRows.join(''), totalEmiPaidEur, initialFdEur, finalFdEur, trueNetEuroCost, npvEur };
+        return { blendedRate, gap, emi, scheduleRowsHtml: scheduleRows.join(''), totalEmiPaidEur, upfrontFeesEur, initialFdEur, finalFdEur, trueNetEuroCost, npvEur };
     }
 
     function buildStressRow(sA, sB, testValue) {
@@ -405,33 +516,23 @@
         const eurAccomm = parseFloat(document.getElementById('eurAccomm').value) || 0;
         const eurLiving = parseFloat(document.getElementById('eurLiving').value) || 0;
         const graceMonths = parseInt(document.getElementById('eurMonths').value) || 0;
-        
+
         document.getElementById('outMasterTargetInr').innerText = formatCurrency(mainTargetInr);
         document.getElementById('outMasterTargetEur').innerText = `Total ${formatEur(eurTuition + ((eurAccomm + eurLiving) * graceMonths))} (Spread over ${graceMonths}m)`;
 
-        // Fetch inputs
-        const secAmtA = parseFloat(document.getElementById('secAmountA').value)||0; const secRateA = parseFloat(document.getElementById('secRateA').value)||0;
-        const unsecAmtA = parseFloat(document.getElementById('unsecAmountA').value)||0; const unsecRateA = parseFloat(document.getElementById('unsecRateA').value)||0;
-        const fdLiqA = parseFloat(document.getElementById('fdLiquidatedA').value)||0; const fdKeptA = parseFloat(document.getElementById('fdKeptA').value)||0;
-        const typeA = document.getElementById('interestTypeA').value; const freqA = document.getElementById('compoundFreqA').value;
-
-        const secAmtB = parseFloat(document.getElementById('secAmountB').value)||0; const secRateB = parseFloat(document.getElementById('secRateB').value)||0;
-        const unsecAmtB = parseFloat(document.getElementById('unsecAmountB').value)||0; const unsecRateB = parseFloat(document.getElementById('unsecRateB').value)||0;
-        const fdLiqB = parseFloat(document.getElementById('fdLiquidatedB').value)||0; const fdKeptB = parseFloat(document.getElementById('fdKeptB').value)||0;
-        const typeB = document.getElementById('interestTypeB').value; const freqB = document.getElementById('compoundFreqB').value;
-        
         const mainEurDiscount = parseFloat(document.getElementById('eurDiscountRate').value) || 0;
         const mainFdRate = parseFloat(document.getElementById('fdRate').value) || 0;
 
-        // --- 1. SENSITIVITY MATRIX: FX DEPRECIATION (Auto-balances virtual scenarios) ---
+        // --- 1. SENSITIVITY MATRIX: FX DEPRECIATION (re-plugs both scenarios against the shifted target) ---
         let htmlFx = '';
         for (let r of [4.0, 6.0, 8.0]) {
             let tTarget = calculateTargetInr(r);
-            let vUnsecA = Math.max(0, tTarget - secAmtA - fdLiqA);
-            let vFdLiqB = Math.max(0, tTarget - secAmtB - unsecAmtB);
-            let vFdKeptB = Math.max(0, (fdKeptB + fdLiqB) - vFdLiqB);
-            let sA = runScenarioEngine(secAmtA, secRateA, vUnsecA, unsecRateA, fdLiqA, fdKeptA, tTarget, typeA, freqA, r, mainEurDiscount, mainFdRate);
-            let sB = runScenarioEngine(secAmtB, secRateB, unsecAmtB, unsecRateB, vFdLiqB, vFdKeptB, tTarget, typeB, freqB, r, mainEurDiscount, mainFdRate);
+            let cfgA = readCfgA(r, mainEurDiscount, mainFdRate, tTarget);
+            cfgA.unsecAmt = Math.max(0, tTarget - cfgA.secAmt - cfgA.fdLiquidated + (cfgA.insuranceFinanced ? cfgA.insurance : 0));
+            let cfgB = readCfgB(r, mainEurDiscount, mainFdRate, tTarget);
+            cfgB.unsecAmt = Math.max(0, tTarget - cfgB.secAmt - cfgB.fdLiquidated + (cfgB.insuranceFinanced ? cfgB.insurance : 0));
+            let sA = runScenarioEngine(cfgA);
+            let sB = runScenarioEngine(cfgB);
             htmlFx += buildStressRow(sA, sB, r);
         }
         document.getElementById('sensFx').innerHTML = htmlFx;
@@ -439,8 +540,8 @@
         // --- 2. SENSITIVITY MATRIX: FD INTEREST RATE ---
         let htmlFd = '';
         for (let f of [5.0, 6.0, 7.0]) {
-            let sA = runScenarioEngine(secAmtA, secRateA, unsecAmtA, unsecRateA, fdLiqA, fdKeptA, mainTargetInr, typeA, freqA, primaryDepRate, mainEurDiscount, f);
-            let sB = runScenarioEngine(secAmtB, secRateB, unsecAmtB, unsecRateB, fdLiqB, fdKeptB, mainTargetInr, typeB, freqB, primaryDepRate, mainEurDiscount, f);
+            let sA = runScenarioEngine(readCfgA(primaryDepRate, mainEurDiscount, f, mainTargetInr));
+            let sB = runScenarioEngine(readCfgB(primaryDepRate, mainEurDiscount, f, mainTargetInr));
             htmlFd += buildStressRow(sA, sB, f);
         }
         document.getElementById('sensFd').innerHTML = htmlFd;
@@ -448,28 +549,31 @@
         // --- 3. SENSITIVITY MATRIX: EURO INFLATION / DISCOUNT ---
         let htmlEur = '';
         for (let d of [1.5, 2.0, 3.0]) {
-            let sA = runScenarioEngine(secAmtA, secRateA, unsecAmtA, unsecRateA, fdLiqA, fdKeptA, mainTargetInr, typeA, freqA, primaryDepRate, d, mainFdRate);
-            let sB = runScenarioEngine(secAmtB, secRateB, unsecAmtB, unsecRateB, fdLiqB, fdKeptB, mainTargetInr, typeB, freqB, primaryDepRate, d, mainFdRate);
+            let sA = runScenarioEngine(readCfgA(primaryDepRate, d, mainFdRate, mainTargetInr));
+            let sB = runScenarioEngine(readCfgB(primaryDepRate, d, mainFdRate, mainTargetInr));
             htmlEur += buildStressRow(sA, sB, d);
         }
         document.getElementById('sensEur').innerHTML = htmlEur;
 
 
         // --- MAIN RUNS & UI UPDATE ---
-        const runA = runScenarioEngine(secAmtA, secRateA, unsecAmtA, unsecRateA, fdLiqA, fdKeptA, mainTargetInr, typeA, freqA, primaryDepRate, mainEurDiscount, mainFdRate);
-        const runB = runScenarioEngine(secAmtB, secRateB, unsecAmtB, unsecRateB, fdLiqB, fdKeptB, mainTargetInr, typeB, freqB, primaryDepRate, mainEurDiscount, mainFdRate);
+        const cfgA = readCfgA(primaryDepRate, mainEurDiscount, mainFdRate, mainTargetInr);
+        const cfgB = readCfgB(primaryDepRate, mainEurDiscount, mainFdRate, mainTargetInr);
+        const runA = runScenarioEngine(cfgA);
+        const runB = runScenarioEngine(cfgB);
 
         const updateGap = (id, gapVal) => {
             const el = document.getElementById(id);
-            if (gapVal >= -1000 && gapVal <= 1000) { el.innerText = "Target Fully Funded ✓"; el.style.backgroundColor = "#dcfce7"; el.style.color = "#166534"; } 
-            else if (gapVal < 0) { el.innerText = `Shortfall: ${formatCurrency(Math.abs(gapVal))}`; el.style.backgroundColor = "#fee2e2"; el.style.color = "#991b1b"; } 
+            if (gapVal >= -1000 && gapVal <= 1000) { el.innerText = "Target Fully Funded ✓"; el.style.backgroundColor = "#dcfce7"; el.style.color = "#166534"; }
+            else if (gapVal < 0) { el.innerText = `Shortfall: ${formatCurrency(Math.abs(gapVal))}`; el.style.backgroundColor = "#fee2e2"; el.style.color = "#991b1b"; }
             else { el.innerText = `Excess Cash: ${formatCurrency(gapVal)}`; el.style.backgroundColor = "#fef9c3"; el.style.color = "#854d0e"; }
         };
 
         updateGap('gapA', runA.gap);
-        document.getElementById('outBlendedRateA').innerText = `${runA.blendedRate.toFixed(1)}%`;
+        document.getElementById('outBlendedRateA').innerText = `${runA.blendedRate.toFixed(2)}%${cfgA.rateStepUp ? ` (+${cfgA.rateStepUp}%/yr)` : ''}`;
         document.getElementById('outEmiA').innerText = formatCurrency(runA.emi);
-        document.getElementById('outFxEmiA').innerText = formatEur(runA.totalEmiPaidEur);
+        document.getElementById('outFxEmiA').innerText = formatEur(runA.totalEmiPaidEur - runA.upfrontFeesEur);
+        document.getElementById('outFeesA').innerText = formatEur(runA.upfrontFeesEur);
         document.getElementById('outFxStartFdA').innerText = formatEur(runA.initialFdEur);
         document.getElementById('outFxEndFdA').innerText = `-${formatEur(runA.finalFdEur)}`;
         document.getElementById('outFxCostA').innerText = formatEur(runA.trueNetEuroCost);
@@ -477,9 +581,10 @@
         document.getElementById('scheduleBodyA').innerHTML = runA.scheduleRowsHtml;
 
         updateGap('gapB', runB.gap);
-        document.getElementById('outBlendedRateB').innerText = `${runB.blendedRate.toFixed(1)}%`;
+        document.getElementById('outBlendedRateB').innerText = `${runB.blendedRate.toFixed(2)}%${cfgB.rateStepUp ? ` (+${cfgB.rateStepUp}%/yr)` : ''}`;
         document.getElementById('outEmiB').innerText = formatCurrency(runB.emi);
-        document.getElementById('outFxEmiB').innerText = formatEur(runB.totalEmiPaidEur);
+        document.getElementById('outFxEmiB').innerText = formatEur(runB.totalEmiPaidEur - runB.upfrontFeesEur);
+        document.getElementById('outFeesB').innerText = formatEur(runB.upfrontFeesEur);
         document.getElementById('outFxStartFdB').innerText = formatEur(runB.initialFdEur);
         document.getElementById('outFxEndFdB').innerText = `-${formatEur(runB.finalFdEur)}`;
         document.getElementById('outFxCostB').innerText = formatEur(runB.trueNetEuroCost);
@@ -489,17 +594,19 @@
         const banner = document.getElementById('winnerBanner');
         const diffNpv = Math.abs(runA.npvEur - runB.npvEur);
         if (runA.npvEur < runB.npvEur) {
-            banner.innerHTML = `🏆 <strong>Scenario A wins.</strong> Preserving your assets and leveraging the loan saves you an effective <strong>${formatEur(diffNpv)}</strong> (Present Value) compared to liquidating upfront.`;
+            banner.innerHTML = `🏆 <strong>Scenario A (Axis Bank) wins.</strong> Preserving your FD and leveraging the unsecured loan saves you an effective <strong>${formatEur(diffNpv)}</strong> (Present Value) compared to HDFC Credila.`;
             banner.style.backgroundColor = "#dcfce7"; banner.style.color = "#166534"; banner.style.borderColor = "#bbf7d0";
         } else {
-            banner.innerHTML = `🏆 <strong>Scenario B wins.</strong> The asset decay of holding INR FDs while the currency depreciates is too punishing. Liquidating saves you <strong>${formatEur(diffNpv)}</strong> (Present Value).`;
+            banner.innerHTML = `🏆 <strong>Scenario B (HDFC Credila) wins.</strong> The asset decay of holding INR FDs while the currency depreciates is too punishing. HDFC Credila saves you <strong>${formatEur(diffNpv)}</strong> (Present Value).`;
             banner.style.backgroundColor = "#f3e8ff"; banner.style.color = "#581c87"; banner.style.borderColor = "#e9d5ff";
         }
     }
 
-    // Auto-balance trigger ONLY for Step 1 Capital Requirement Inputs
-    const step1Ids = ['eurTuition', 'eurAccomm', 'eurLiving', 'eurMonths', 'inrDepRate', 'currentFx'];
-    step1Ids.forEach(id => {
+    // Auto-balance trigger for Step 1 Capital Requirement Inputs AND each scenario's fixed bank loan / FD-liquidated amount.
+    const autoBalanceIds = ['eurTuition', 'eurAccomm', 'eurLiving', 'eurMonths', 'inrDepRate', 'currentFx',
+        'secAmountA', 'fdLiquidatedA', 'insuranceA', 'insuranceFinancedA',
+        'secAmountB', 'fdLiquidatedB', 'insuranceB', 'insuranceFinancedB'];
+    autoBalanceIds.forEach(id => {
         document.getElementById(id).addEventListener('input', () => {
             autoBalance();
             calculate();
@@ -508,11 +615,12 @@
 
     // Standard trigger for everything else
     document.querySelectorAll('input, select').forEach(element => {
-        if (!step1Ids.includes(element.id)) {
+        if (!autoBalanceIds.includes(element.id)) {
             element.addEventListener('input', calculate);
         }
     });
 
+    autoBalance(); // Initial plug calculation
     calculate(); // Initial Run
 </script>
 </body>
